@@ -1,0 +1,1528 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFF Fleet Tracker </title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#070b14;--card:#0d1524;--tx:#e8f4ff;--mut:#8ba4bf;--br:#1d3553;--pri:#00c8ff;--side:#050914;--ok:#00e58b;--wa:#ffad33;--er:#ff496c;--sh:0 4px 22px #00bfff12;--glow:0 0 0 1px #00c8ff18,0 0 18px #00c8ff0b}
+/* Cyber Track theme */
+:root{--cyber-accent:#00c8ff}
+
+*{box-sizing:border-box}body{margin:0;font-family:Cairo,Tahoma,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--tx)}
+body:has(.lg){background:radial-gradient(ellipse at top right,#102b49 0%,#070b14 58%,#03050a 100%)}
+.shell{display:flex;min-height:100vh}.content{flex:1;min-width:0}
+aside{width:230px;background:var(--side);color:#cfe0f3;display:flex;flex-direction:column;padding:18px 12px;position:sticky;top:0;height:100vh;z-index:1000}
+.brand{font-size:20px;font-weight:700;color:#fff;padding:6px 10px 18px}.brand small{display:block;font-size:12px;font-weight:400;color:#7f93ad;margin-top:2px}
+aside nav{display:flex;flex-direction:column;gap:4px;flex:1;overflow:auto}
+aside nav button{display:flex;align-items:center;gap:10px;text-align:start;background:none;border:0;color:#b9cbe0;padding:10px 12px;border-radius:10px;width:100%}
+aside nav button:hover{background:color-mix(in srgb,var(--pri) 8%,transparent);color:#e8faff;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pri) 13%,transparent)}aside nav button.on{background:linear-gradient(100deg,var(--pri2),var(--pri));color:var(--onpri);font-weight:700;box-shadow:0 0 18px color-mix(in srgb,var(--pri) 15%,transparent)}
+.usr{border-top:1px solid #ffffff1a;padding-top:12px;font-size:13px;display:flex;flex-direction:column;gap:8px}.usr button{background:#ffffff14;color:#fff;border:0}
+main{padding:24px;max-width:1100px;margin:auto}h2{margin:0 0 14px;font-size:22px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{padding:8px 14px;border:1px solid var(--br);background:var(--card);border-radius:10px;cursor:pointer}
+button.p{background:linear-gradient(110deg,var(--pri2),var(--pri));color:var(--onpri);border-color:var(--pri);font-weight:700;box-shadow:0 0 14px color-mix(in srgb,var(--pri) 9%,transparent)}button.d{color:var(--er)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--br);border-radius:10px;background:var(--bg)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc,var(--pri));outline-offset:0;box-shadow:0 0 15px color-mix(in srgb,var(--pri) 9%,transparent)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.c{background:linear-gradient(145deg,var(--card2),var(--card));border:1px solid var(--br);border-radius:16px;padding:16px;box-shadow:var(--sh),var(--glow)}
+.g .c{border-top:4px solid var(--pri)}.g .c:nth-child(2){border-top-color:var(--ok)}.g .c:nth-child(3){border-top-color:var(--wa)}.g .c:nth-child(4){border-top-color:var(--er)}.g .c:nth-child(5){border-top-color:var(--sec)}
+.c h3{margin:0 0 4px;font-size:30px}.c span{color:var(--mut);font-size:13px}
+.w{overflow-x:auto;border-radius:16px;border:1px solid var(--br);box-shadow:var(--sh);background:var(--card)}
+table{width:100%;border-collapse:collapse}th,td{padding:11px 12px;border-bottom:1px solid var(--br);text-align:start;white-space:nowrap}
+th{background:var(--bg);color:var(--mut);font-size:12px}tr:hover td{background:color-mix(in srgb,var(--pri) 5%,transparent)}tr:last-child td{border-bottom:0}
+.t{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;color:#fff}
+#map,#rmap{position:relative;z-index:0;border-radius:16px;border:1px solid var(--br);box-shadow:var(--sh)}#map{height:70vh}
+.m{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:2000;padding:12px}
+.m form{background:var(--card);border-radius:18px;padding:20px;width:100%;max-width:440px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px #0006}
+label{display:block;margin:10px 0 4px;font-size:13px;color:var(--mut)}.r{display:flex;gap:8px;margin-top:14px}
+.n{background:var(--card);border:1px solid var(--br);border-radius:16px;padding:14px;margin-bottom:12px;font-size:14px;box-shadow:var(--sh)}.mut{color:var(--mut);font-size:13px}
+#toast{position:fixed;bottom:18px;inset-inline-start:18px;background:#06101d;color:#dff8ff;border:1px solid color-mix(in srgb,var(--pri) 33%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--pri) 9%,transparent);padding:10px 16px;border-radius:10px;z-index:3000;display:none}
+.lg{max-width:440px;margin:10vh auto;padding:30px 26px;text-align:center}.lg-title{display:block;text-align:center;font-size:clamp(30px,5vw,40px);font-weight:800;line-height:1.2;letter-spacing:.4px;color:#fff;margin:0 auto 24px;text-shadow:0 0 22px color-mix(in srgb,var(--pri) 27%,transparent)}.lg h2{text-align:center}
+.truck-picker{margin:14px 0;padding:12px;border:1px solid var(--br);border-radius:12px;background:#07101c}.truck-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin:8px 0 12px}.truck-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid var(--br);border-radius:10px;padding:8px;margin:0;cursor:pointer;color:var(--tx);background:#0b1523}.truck-choice:has(input:checked){border-color:var(--pri);box-shadow:0 0 0 1px var(--pri);background:color-mix(in srgb,var(--pri) 7%,transparent)}.truck-choice input{width:auto;accent-color:var(--pri)}.truck-choice svg{width:66px;height:42px;display:block}.truck-colors{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0}.truck-color{display:flex;align-items:center;gap:5px;border:1px solid var(--br);padding:5px 8px;border-radius:20px;margin:0;cursor:pointer}.truck-color input{width:auto;accent-color:var(--pri)}.color-dot{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid #fff5}.truck-preview{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:#0003;margin-top:8px}.truck-preview svg{width:76px;height:48px}.truck-cell svg{width:58px;height:36px;vertical-align:middle}.truck-cell{display:inline-flex;align-items:center;gap:6px}.aff-truck-div{background:transparent!important;border:0!important}.aff-truck-marker{width:48px;height:42px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 3px #000c)}.aff-truck-marker svg{width:48px;height:42px;overflow:visible}.truck-button{padding:5px 8px;font-size:12px}
+.company-pin{width:30px;height:30px;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);background:#ef4444;border:2px solid #fff;box-shadow:0 2px 8px #000a;display:flex;align-items:center;justify-content:center;color:#fff}
+.company-pin span{transform:rotate(45deg);font-size:15px;line-height:1}
+.company-tooltip{background:#081523!important;color:#e8f4ff!important;border:1px solid var(--pri)!important;border-radius:7px!important;box-shadow:0 2px 8px #0008!important;font-weight:700;padding:4px 7px!important}
+.company-tooltip:before{border-top-color:var(--pri)!important}
+.company-pick-map{height:320px;border:1px solid var(--br);border-radius:12px;margin:8px 0;z-index:0}
+.company-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.company-card{border:1px solid var(--br);border-radius:12px;padding:12px;background:#07111f;display:flex;flex-direction:column;gap:7px;min-width:0}
+.company-card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.company-card .actions button{font-size:12px}
+.plan-company-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:10px 0}
+.plan-company-option{display:flex;align-items:flex-start;gap:8px;background:#07111f;border:1px solid var(--br);border-radius:10px;padding:10px;margin:0;cursor:pointer}
+.plan-company-option input{width:auto;margin-top:3px;accent-color:var(--pri);flex-shrink:0}
+.plan-company-option span{display:block;min-width:0;white-space:normal}
+.plan-company-option small{display:block;color:var(--mut);margin-top:3px;overflow-wrap:anywhere}
+.visit-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--br)}
+.visit-row:last-child{border-bottom:0}.visit-row input{width:auto;margin-top:5px}
+.visit-done{opacity:.62}.visit-done strong{text-decoration:line-through}
+.driver-map{height:42vh;min-height:270px;border:1px solid var(--br);border-radius:14px;margin:12px 0;z-index:0}
+.route-note{padding:10px 12px;border-inline-start:3px solid var(--pri);background:color-mix(in srgb,var(--pri) 5%,transparent);border-radius:8px;margin:10px 0}
+@media(max-width:760px){.company-pick-map{height:260px}.driver-map{height:36vh;min-height:230px}}
+@media(max-width:760px){.shell{display:block}aside{position:fixed;inset:auto 0 0 0;width:auto;height:auto;flex-direction:row;padding:6px;border-top:1px solid #ffffff1a}
+.brand,.usr span{display:none}aside nav{flex-direction:row;overflow-x:auto;gap:2px}aside nav button{flex-direction:column;gap:2px;font-size:11px;padding:6px 10px;white-space:nowrap;width:auto}
+.usr{border:0;padding:0;flex-direction:row}main{padding:14px 12px 96px}#map{height:60vh}#toast{bottom:84px}}
+
+.trk-bar{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;margin-bottom:2px}
+.trk-chip{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:7px 13px;border-radius:99px;font-size:14px}
+.trk-chip.on{background:linear-gradient(110deg,var(--pri2),var(--pri));color:var(--onpri);border-color:var(--pri);font-weight:700}
+.trk-dot{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #fff5}
+.trk-info{min-height:22px;margin:0 0 10px;font-size:14px;color:var(--mut)}.trk-info b{color:var(--tx)}
+.trk-tooltip{background:#062014!important;color:#dfffee!important;border:1px solid #00e58b!important;border-radius:7px!important;box-shadow:0 2px 8px #0008!important;font-weight:700;padding:3px 7px!important}
+.trk-tooltip:before{border-top-color:#00e58b!important}.trk-tooltip.off{opacity:.65;border-color:#8ba4bf!important}
+.r{flex-wrap:wrap}
+.rpl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.rpl input[type=range]{flex:1;min-width:150px;padding:0;accent-color:var(--pri)}.rpl select{width:auto}
+.rpl-info{margin-top:8px;font-size:13px;color:var(--mut);min-height:20px}.rpl-info b{color:var(--tx)}
+.warn{color:var(--wa)}
+.vchip{padding:5px 0;border-bottom:1px dashed var(--br)}.vchip:last-child{border-bottom:0}
+.mapfs{position:fixed!important;inset:0;width:100vw!important;height:100vh!important;height:100dvh!important;max-height:none!important;z-index:2500!important;border-radius:0!important;margin:0!important;border:0!important}
+body.fs-on{overflow:hidden}
+body.fs-live .trk-bar{position:fixed;top:8px;left:52px;right:8px;z-index:2600;background:#06101de6;border-radius:12px;padding:6px 8px;margin:0}
+body.fs-live .trk-info{position:fixed;bottom:8px;left:8px;right:8px;z-index:2600;background:#06101de6;border-radius:10px;padding:8px 12px;margin:0}
+body.fs-rep #rpl{position:fixed;bottom:8px;left:8px;right:8px;z-index:2600;margin:0;background:#06101df2}
+
+.leaflet-container{direction:ltr}
+.leaflet-bar a,.leaflet-control-layers,.leaflet-bar a:hover{background:var(--card)!important;color:var(--tx)!important;border-color:var(--br)!important}
+[dir=ltr] input[type=email],[dir=ltr] input[type=number]{direction:ltr}
+#lgsw{position:fixed;top:10px;inset-inline-end:12px;z-index:3000}#lgsw select{width:auto;padding:6px 10px}
+.thg{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.thb{display:flex;align-items:center;gap:8px;padding:8px 12px}
+.thb.on{outline:2px solid var(--pri)}.thb i{display:inline-flex;width:34px;height:18px;border-radius:6px;overflow:hidden;border:1px solid var(--br)}.thb i b{flex:1}
+.thc{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.thc input[type=color]{height:40px;padding:2px}
+.pvr label{display:flex;gap:8px;align-items:center;margin:6px 0}.pvr input[type=radio]{width:auto}
+pre.cd{direction:ltr;text-align:left;overflow:auto;background:var(--bg);border:1px solid var(--br);border-radius:10px;padding:10px;font-size:12px}
+/* ===== [UPDATE] UI polish ===== */
+:root{--rad:14px}
+body{line-height:1.55;-webkit-font-smoothing:antialiased}
+aside{width:250px;padding:20px 14px;border-inline-end:1px solid var(--br);background:linear-gradient(180deg,var(--side),color-mix(in srgb,var(--side) 88%,var(--pri)))}
+.brand{display:flex;flex-direction:column;padding:4px 10px 18px;margin-bottom:6px;border-bottom:1px solid #ffffff14;letter-spacing:.3px}
+.brand small{color:var(--pri);font-weight:600;letter-spacing:.5px}
+aside nav{gap:2px;padding-inline-end:2px}
+.ng{font-size:11px;font-weight:700;color:#7f93ad;letter-spacing:.6px;padding:14px 12px 6px;text-transform:uppercase}
+aside nav button{position:relative;gap:12px;padding:9px 12px;border-radius:12px;font-weight:600;font-size:14px;transition:background .15s,color .15s}
+aside nav button .ic{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:9px;background:#ffffff0d;font-size:15px;flex:none}
+aside nav button .tx{flex:1;text-align:start}
+aside nav button:hover{background:#ffffff0f;box-shadow:none}
+aside nav button.on{background:color-mix(in srgb,var(--pri) 18%,transparent);color:#fff;box-shadow:none}
+aside nav button.on .ic{background:var(--pri);color:var(--onpri)}
+aside nav button.on::before{content:"";position:absolute;inset-inline-start:-14px;top:20%;bottom:20%;width:4px;border-radius:4px;background:var(--pri)}
+.bd{font-style:normal;background:var(--er);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px}
+.usr{border-top:1px solid #ffffff14;padding-top:14px;gap:10px}
+.uc{display:flex;align-items:center;gap:10px}.uc b{display:block;font-size:13px;color:#fff}.uc small{color:#7f93ad;font-size:11px}
+.av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--pri),var(--sec));color:var(--onpri);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.usr button{border-radius:10px;padding:8px}.usr button:hover{background:#ffffff24}
+main{max-width:1200px;padding:28px 28px 48px}
+h2{font-size:24px;font-weight:700;margin:0 0 18px;display:flex;align-items:center;gap:8px}
+button{transition:filter .15s,transform .1s,background .15s;font-weight:600}
+button:hover{filter:brightness(1.12)}button:active{transform:translateY(1px)}
+button.p{box-shadow:0 4px 14px color-mix(in srgb,var(--pri) 28%,transparent)}
+.c,.n{border-radius:var(--rad)}
+.n{background:var(--card);border:1px solid var(--br);padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.n>b:first-child{display:block;font-size:15px;margin-bottom:6px}
+.g .c{transition:transform .15s}.g .c:hover{transform:translateY(-2px)}
+.w{border:1px solid var(--br);border-radius:var(--rad);overflow:auto;background:var(--card);margin-bottom:14px}
+.w table{width:100%;border-collapse:collapse}
+.w th{background:var(--card2);color:var(--mut);font-size:12px;font-weight:700;text-align:start;padding:11px 12px;white-space:nowrap;position:sticky;top:0}
+.w td{padding:11px 12px;border-top:1px solid var(--br);vertical-align:middle}
+.w tr:hover td{background:color-mix(in srgb,var(--pri) 5%,transparent)}
+.w td button{margin:2px;padding:6px 10px;font-size:13px}
+label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:10px 0 4px}
+.r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.m{backdrop-filter:blur(4px)}.m form{border:1px solid var(--br);box-shadow:0 24px 60px #0008}
+.mnu{display:none;position:fixed;top:10px;inset-inline-start:10px;z-index:1100;padding:8px 12px;font-size:18px}
+@media(max-width:860px){.mnu{display:block}aside{position:fixed;inset-block:0;inset-inline-start:-270px;width:250px;transition:inset-inline-start .2s;box-shadow:0 0 40px #000a}aside.open{inset-inline-start:0}main{padding:60px 14px 40px}}
+
+/* ===== [UPDATE] Full-width top navigation ===== */
+.shell{flex-direction:column}.content{width:100%}
+aside{width:100%;height:auto;position:sticky;top:0;bottom:auto;flex-direction:row;align-items:center;gap:16px;padding:8px 20px;border-inline-end:0;border-bottom:1px solid var(--br);box-shadow:0 4px 20px #0005}
+.brand{flex-direction:row;align-items:baseline;gap:10px;padding:0 4px;margin:0;border:0;white-space:nowrap;flex:none}
+aside nav{flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;gap:4px;flex:1;scrollbar-width:thin}
+.ng{display:none}
+aside nav button{width:auto;flex:none;white-space:nowrap;padding:8px 12px}
+aside nav button.on::before{inset-inline:12px;top:auto;bottom:-9px;width:auto;height:3px}
+.usr{flex-direction:row;align-items:center;border:0;padding:0;gap:12px;flex:none}
+.uc small{display:none}.uc b{white-space:nowrap}
+.usr button{width:auto;padding:8px 14px}
+main{max-width:none;width:100%;margin:0;padding:24px 28px 48px}
+.mnu{display:none!important}
+@media(max-width:860px){aside{position:sticky;inset-block:0 auto;inset-inline-start:auto;width:100%;padding:8px 10px;gap:8px}.brand small,.uc b{display:none}main{padding:16px 12px 40px}}
+
+#dd{position:fixed;z-index:3000;min-width:210px;background:var(--card);border:1px solid var(--br);border-radius:14px;padding:6px;box-shadow:0 16px 40px #0008}
+#dd button{display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:0;background:none;padding:9px 12px;border-radius:10px;font-weight:600}
+#dd button:hover{background:color-mix(in srgb,var(--pri) 14%,transparent)}
+#dd .ic{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:8px;background:var(--card2)}
+.gear{width:34px;height:34px;padding:0!important;border-radius:50%;background:#ffffff14;border:0;font-size:16px;flex:none}
+
+/* ===== [UPDATE] Unified compact design system (tokens + shared components) ===== */
+:root{--fs:13px;--fs-s:12px;--fs-l:15px;--ctl:30px;--rad:10px;--gap:8px;--pad:10px}
+html,body{max-width:100%}body{font-size:var(--fs);line-height:1.45;overflow-x:hidden}
+aside{padding:6px 16px;gap:12px;min-width:0}
+.brand{font-size:16px}.brand small{font-size:11px}
+aside nav{min-width:0;gap:2px}
+aside nav button{padding:5px 10px;font-size:var(--fs);gap:8px;border-radius:8px}
+aside nav button .ic{width:24px;height:24px;font-size:13px;border-radius:7px}
+aside nav button.on::before{bottom:-7px;height:2px}
+.bd{font-size:10px;padding:0 6px}
+.av{width:28px;height:28px;font-size:13px}.uc b{font-size:var(--fs)}
+.gear{width:28px;height:28px;font-size:14px}.usr button{padding:5px 10px;border-radius:8px}
+main{padding:14px 18px 32px;max-width:1700px;margin:0 auto}
+h2{font-size:18px;margin:0 0 10px}
+button{padding:5px 12px;font-size:var(--fs);min-height:var(--ctl);border-radius:8px}
+input,select,textarea{padding:5px 9px;font-size:var(--fs);min-height:var(--ctl);border-radius:8px}
+textarea{min-height:60px}input[type=checkbox],input[type=radio]{min-height:0}
+label{font-size:var(--fs-s);margin:8px 0 3px}
+.r{gap:6px;margin-top:8px}
+.g{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.c{padding:10px 12px;border-radius:12px}.g .c{border-top-width:3px}
+.c h3{font-size:22px;margin:0 0 2px}.c span{font-size:var(--fs-s)}
+.n{padding:10px 12px;margin-bottom:8px;font-size:var(--fs);border-radius:12px}
+.n>b:first-child{font-size:14px;margin-bottom:4px}.mut{font-size:var(--fs-s)}
+.w{margin-bottom:10px;border-radius:12px;max-width:100%}
+th,td{padding:6px 10px;line-height:1.35}
+th{font-size:11.5px}.w th{padding:7px 10px}.w td{padding:6px 10px}
+.w td button,td button{padding:2px 8px;min-height:24px;font-size:var(--fs-s);margin:1px}
+.t{padding:2px 8px;font-size:11px}
+.m form{max-width:420px;padding:14px;border-radius:14px;font-size:var(--fs)}.m form h3{margin:0 0 6px;font-size:16px}
+#dd{min-width:180px;padding:4px}#dd button{padding:6px 10px;font-size:var(--fs);min-height:0}#dd .ic{width:24px;height:24px}
+#toast{padding:8px 14px;font-size:var(--fs)}
+.lg{margin:6vh auto;padding:20px 20px}.lg-title{font-size:clamp(24px,4vw,30px)}
+#map{height:calc(100vh - 150px);min-height:380px}
+.driver-map{height:38vh;min-height:220px;margin:8px 0}.company-pick-map{height:240px;margin:6px 0}
+.trk-chip{padding:4px 10px;font-size:var(--fs)}.trk-info{font-size:var(--fs);margin-bottom:6px}.trk-bar{padding:2px 0 6px}
+.company-list,.plan-company-options{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:8px 0}
+.company-card{padding:9px;gap:5px;border-radius:10px}.plan-company-option{padding:8px}
+.visit-row{padding:8px 0}.route-note{padding:8px 10px;margin:8px 0}.truck-picker{margin:8px 0;padding:8px}
+.truck-choices{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}.truck-choice svg{width:52px;height:34px}
+.thb{padding:5px 10px}.thc input[type=color]{height:32px}
+@media(max-width:1100px){main{padding:12px 14px 28px}.g{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}}
+@media(max-width:860px){
+ aside{padding:5px 8px;gap:6px}aside nav button .tx{font-size:12px}aside nav button{padding:5px 8px}
+ main{padding:10px 10px 28px}h2{font-size:16px}
+ .w td,.w th{padding:5px 7px;font-size:12px}
+ .m{padding:8px}.m form{max-width:100%}
+ #map{height:62vh;min-height:300px}
+ .thc,.company-list,.plan-company-options{grid-template-columns:1fr 1fr}
+ .r{flex-wrap:wrap}}
+@media(max-width:480px){.g{grid-template-columns:1fr 1fr}.thc,.company-list,.plan-company-options{grid-template-columns:1fr}.c h3{font-size:19px}.uc{display:none}}
+@media(pointer:coarse){button,input,select{min-height:36px}input[type=checkbox],input[type=radio]{min-height:0}input,select,textarea{font-size:16px}}
+
+/* ===== [UPDATE] Comfort spacing (less vertical compression) ===== */
+:root{--fs:13.5px;--ctl:34px}
+body{line-height:1.6}
+aside{padding:9px 18px}aside nav button{padding:8px 12px}aside nav button .ic{width:26px;height:26px}
+aside nav button.on::before{bottom:-10px}
+main{padding:22px 24px 44px}
+h2{font-size:20px;margin:0 0 16px}
+button{padding:7px 14px}
+input,select,textarea{padding:7px 10px}
+label{margin:12px 0 5px}
+.r{margin-top:12px;gap:8px}
+.g{gap:12px;margin-bottom:16px}.c{padding:14px 16px}.c h3{font-size:25px;margin:0 0 4px}
+.n{padding:14px 16px;margin-bottom:12px}.n>b:first-child{margin-bottom:6px}
+.w{margin-bottom:14px}
+th,td{padding:9px 12px}.w th{padding:10px 12px}.w td{padding:9px 12px}
+.w td button,td button{padding:4px 10px;min-height:28px}
+.m form{padding:20px}.m form h3{margin:0 0 10px}
+.company-list,.plan-company-options{gap:12px;margin:12px 0}.company-card{padding:12px;gap:7px}.plan-company-option{padding:10px}
+.visit-row{padding:11px 0}.driver-map{margin:12px 0}.truck-picker{padding:12px;margin:12px 0}
+@media(max-width:1100px){main{padding:16px 16px 36px}}
+@media(max-width:860px){main{padding:14px 12px 32px}.w td,.w th{padding:8px 9px}h2{font-size:17px}}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+// ---------- الحالة ----------
+const LS=localStorage, $=s=>document.querySelector(s);
+if(!LS.aff_theme)LS.aff_theme='cyber-track';
+// ======== [UPDATE] i18n / themes / provider ========
+let LANG=LS.aff_lang==='en'?'en':'ar', LOCALE=LANG==='en'?'en-GB':'ar-EG';
+const T=(a,e)=>LANG==='en'?e:a;
+const TR={'لوحة التحكم':'Dashboard','الخريطة':'Map','الشركات والزيارات':'Companies & Visits','المركبات':'Vehicles','السائقون':'Drivers','الأجهزة':'Devices','التنبيهات':'Alerts','تقارير المتتبعين':'Tracker Reports','تتبّع موقعي':'Track My Location','المستخدمون':'Users','الإعدادات':'Settings','الإعدادات وقاعدة البيانات':'Settings & Database','تتبع المركبات':'Vehicle Tracking','خروج':'Logout','تسجيل الدخول':'Sign in','إنشاء حساب جديد':'Create account','البريد الإلكتروني':'Email','كلمة المرور':'Password','الاسم':'Name','الصلاحية':'Role','حفظ':'Save','إلغاء':'Cancel','حذف':'Delete','تعديل':'Edit','نعم':'Yes','لا':'No','بحث':'Search','+ إضافة':'+ Add','إضافة':'Add','الحالة':'Status','متصل':'Online','غير متصل':'Offline','متوقف':'Stopped','يتحرك':'Moving','السرعة':'Speed','البطارية':'Battery','آخر تحديث':'Last update','السائق':'Driver','المركبة':'Vehicle','المتتبع':'Tracker','التاريخ':'Date','اليوم':'Today','الوقت':'Time','المسافة':'Distance','الكيلومترات':'Kilometers','كم/س':'km/h','كم':'km','ملاحظات':'Notes','الشركات':'Companies','من تاريخ':'From date','إلى تاريخ':'To date','عرض التقرير':'Show report','تصدير Excel':'Export Excel','تصدير CSV':'Export CSV','تصدير PDF':'Export PDF','لا توجد بيانات':'No data','لا توجد تنبيهات':'No alerts','لا يوجد متتبعون':'No trackers','جاري الاتصال بقاعدة البيانات…':'Connecting to database…','إعادة المحاولة':'Retry','تم الحفظ':'Saved','فشل الحفظ':'Save failed','فشل الاتصال بقاعدة البيانات':'Database connection failed','نسخة احتياطية واسترجاع':'Backup & Restore','تصدير نسخة البيانات':'Export data backup','استرجاع من ملف':'Restore from file','حد السرعة للتنبيه':'Speed alert limit','تسجيل الزيارات تلقائيًا':'Automatic visit logging','تفعيل التسجيل التلقائي':'Enable automatic logging','تصفير بيانات محددة':'Reset selected data','تنفيذ التصفير':'Run reset','كل المركبات':'All vehicles','كل السائقين':'All drivers','كل الأجهزة':'All devices','كل المتتبعين':'All trackers','المواقع الحالية للأجهزة':'Current device positions','مدير عام (Super Admin)':'Super Admin','مدير (Manager)':'Manager','مشاهد (Viewer)':'Viewer','متتبع (موبايل)':'Tracker (mobile)','الخريطة المباشرة':'Live Map','عرض الكل':'Show all','مسارات اليوم':'Today routes','فتح في Google Maps':'Open in Google Maps','الشركات المحفوظة وخطوط السير':'Saved companies & routes','مواقع الشركات المحفوظة':'Saved company locations','حفظ الموقع':'Save location','جاري البحث…':'Searching…','عنوان غير معروف':'Unknown address','زمن الحركة':'Moving time','زمن التوقف':'Stopped time','أقصى سرعة':'Max speed','البداية':'Start','النهاية':'End','المدة':'Duration','الإنجاز':'Completion','زيارات مخططة':'Planned visits','تمت':'Done','لم تتم':'Not done','تقرير زيارات الشركات':'Company visits report','أيام التتبع':'Tracking days','أضف مركبات وأجهزة أولاً':'Add vehicles and devices first','تم حذف':'Deleted','تم إلغاء علامة إتمام الزيارة':'Visit completion cleared','تم تسجيل زيارة الشركة':'Company visit recorded','تم التصفير':'Reset done','شكل الشاحنة':'Truck shape','لون الشاحنة':'Truck color','المعرّف:':'ID:','قاعدة البيانات غير متصلة':'Database offline','المتصفح لا يدعم تحديد الموقع':'Browser does not support geolocation'};
+const KEYS=Object.keys(TR).sort((a,b)=>b.length-a.length), AR=/[\u0600-\u06FF]/;
+function trs(x){if(LANG!=='en'||!x||!AR.test(x))return x;const k=x.trim();if(TR[k])return x.replace(k,TR[k]);for(const q of KEYS)if(q.length>3&&x.includes(q))x=x.split(q).join(TR[q]);return x}
+function trNode(n){if(n.nodeType===3){const v=trs(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}else if(n.nodeType===1&&n.tagName!=='SCRIPT'&&n.tagName!=='STYLE'){for(const a of['placeholder','title','aria-label']){const v=n.getAttribute(a);if(v){const w=trs(v);if(w!==v)n.setAttribute(a,w)}}n.childNodes.forEach(trNode)}}
+function setDocLang(){LOCALE=LANG==='en'?'en-GB':'ar-EG';const h=document.documentElement;h.lang=LANG;h.dir=LANG==='en'?'ltr':'rtl';document.title=T('AFF Fleet Tracker','AFF Fleet Tracker')}
+function setLang(l){LANG=l==='en'?'en':'ar';LS.aff_lang=LANG;setDocLang();render()}
+const langSel=()=>`<select onchange="setLang(this.value)"><option value="ar" ${LANG==='ar'?'selected':''}>العربية</option><option value="en" ${LANG==='en'?'selected':''}>English</option></select>`;
+
+const mk=(bg,card,card2,tx,mut,br,pri,pri2,side,sec,acc,onpri,dark)=>({d:dark,v:{bg,card,card2,tx,mut,br,pri,pri2,side,sec,acc,onpri}});
+const PRESETS={
+ cyber:{n:['Cyber Track (الافتراضي)','Cyber Track (default)'],...mk('#070b14','#0d1524','#101c2e','#e8f4ff','#8ba4bf','#1d3553','#00c8ff','#007ca8','#050914','#6366f1','#00c8ff','#03111b',1)},
+ corp:{n:['AFF أزرق مؤسسي','AFF Corporate Blue'],...mk('#0a1424','#11213a','#152a49','#eaf2ff','#8fa6c4','#223e66','#2f80ed','#1b4fa8','#07101e','#6aa9ff','#2f80ed','#ffffff',1)},
+ dblue:{n:['أزرق داكن','Dark Blue'],...mk('#060d1f','#0b1733','#0f1f45','#e6ecff','#8d9cc4','#1b2d5e','#4f7cff','#2a47c4','#040a18','#8b5cf6','#4f7cff','#ffffff',1)},
+ light:{n:['فاتح','Light'],...mk('#f2f5fa','#ffffff','#f8fafd','#14243b','#5b6f8a','#d3dce9','#1565d8','#0d47a1','#0f2747','#7c5cff','#1565d8','#ffffff',0)},
+ dark:{n:['داكن','Dark'],...mk('#0f0f10','#19191b','#1f1f22','#f1f1f2','#9a9aa3','#2e2e33','#e5e7eb','#9ca3af','#0a0a0b','#f59e0b','#e5e7eb','#111111',1)},
+ green:{n:['أخضر','Green'],...mk('#07130e','#0d2018','#102a1f','#e8fff3','#8cb8a2','#1c4636','#22c55e','#15803d','#050e0a','#84cc16','#22c55e','#04210f',1)},
+ purple:{n:['بنفسجي','Purple'],...mk('#0d0816','#170f26','#1d1330','#f3ebff','#a893c8','#35224f','#a855f7','#6d28d9','#09050f','#ec4899','#a855f7','#ffffff',1)}};
+let thDraft=null;
+const thKey=()=>'aff_th_'+(typeof me!=='undefined'&&me?me.id:'guest');
+const thLoad=()=>{try{const c=JSON.parse(LS[thKey()]||LS.aff_th_last||'null');if(c&&PRESETS[c.p])return c}catch(e){}return{p:'cyber',c:{}}};
+function applyVars(cfg){const P0=PRESETS[cfg.p]||PRESETS.cyber,v={...P0.v,...(cfg.c||{})};if(cfg.c&&cfg.c.pri&&!cfg.c.pri2)v.pri2=`color-mix(in srgb,${v.pri} 60%,#000)`;
+ v.glow=`0 0 0 1px color-mix(in srgb,${v.pri} 10%,transparent),0 0 18px color-mix(in srgb,${v.pri} 5%,transparent)`;v.sh=`0 4px 22px color-mix(in srgb,${v.pri} 7%,transparent)`;
+ const st=document.documentElement.style;for(const k in v)st.setProperty('--'+k,v[k]);st.colorScheme=P0.d?'dark':'light'}
+const applyTheme=()=>applyVars(thDraft||thLoad());
+function thPick(id){thDraft={p:id,c:{}};applyTheme();render()}
+function thColor(k,v){thDraft=thDraft||thLoad();thDraft.c={...(thDraft.c||{}),[k]:v};applyTheme()}
+function thApply(){const c=thDraft||thLoad();LS[thKey()]=LS.aff_th_last=JSON.stringify(c);thDraft=null;toast(T('تم تطبيق المظهر','Theme applied'));render()}
+function thCancel(){thDraft=null;applyTheme();render()}
+function thReset(){thDraft=null;LS[thKey()]=LS.aff_th_last=JSON.stringify({p:'cyber',c:{}});applyTheme();toast(T('تمت إعادة الضبط','Reset to default'));render()}
+function appearanceUI(){const c=thDraft||thLoad(),v={...PRESETS[c.p].v,...(c.c||{})},hx=x=>/^#[0-9a-f]{6}$/i.test(x)?x:'#000000';
+ return `<div class="n"><b>${T('المظهر والثيمات','Appearance & Themes')}</b>
+ <p class="mut">${T('اختر ثيمًا جاهزًا أو خصّص الألوان؛ التغيير يظهر فورًا كمعاينة ولا يُحفظ إلا بعد «تطبيق». يُحفظ المظهر لكل مستخدم على هذا الجهاز.','Pick a preset or customize colors. Changes preview instantly and are saved only when you press Apply. Saved per user on this device.')}</p>
+ <div class="thg">${Object.keys(PRESETS).map(k=>{const p=PRESETS[k].v;return `<button class="thb ${c.p===k?'on':''}" onclick="thPick('${k}')"><i><b style="background:${p.bg}"></b><b style="background:${p.pri}"></b><b style="background:${p.sec}"></b></i>${PRESETS[k].n[LANG==='en'?1:0]}</button>`}).join('')}</div>
+ <div class="thc"><div><label>${T('اللون الأساسي','Primary color')}</label><input type="color" value="${hx(v.pri)}" oninput="thColor('pri',this.value)"></div><div><label>${T('اللون الثانوي','Secondary color')}</label><input type="color" value="${hx(v.sec)}" oninput="thColor('sec',this.value)"></div><div><label>${T('لون التمييز','Accent color')}</label><input type="color" value="${hx(v.acc)}" oninput="thColor('acc',this.value)"></div></div>
+ <div class="r" style="margin-top:10px"><button class="p" onclick="thApply()">${T('تطبيق','Apply')}</button><button onclick="thCancel()">${T('إلغاء المعاينة','Cancel preview')}</button><button class="d" onclick="thReset()">${T('إعادة للافتراضي','Reset to default')}</button></div></div>
+ <div class="n"><b>${T('اللغة','Language')}</b><div style="margin-top:8px">${langSel()}</div></div>`}
+
+// ---- connection provider (Firebase is the untouched default) ----
+const PV0=()=>({type:'firebase',sb:{url:'',key:'',table:'aff_store'},vps:{url:'',token:''}});
+const provider=()=>{try{const o=JSON.parse(LS.aff_provider||'{}');return{...PV0(),...o,sb:{...PV0().sb,...o.sb},vps:{...PV0().vps,...o.vps}}}catch(e){return PV0()}};
+async function extFetch(p=provider()){
+ if(p.type==='supabase'){const r=await fetch(`${p.sb.url.replace(/\/$/,'')}/rest/v1/${p.sb.table}?id=eq.db&select=json`,{headers:{apikey:p.sb.key,Authorization:'Bearer '+p.sb.key}});if(!r.ok)throw Error('Supabase '+r.status);const a=await r.json();return a[0]?a[0].json:null}
+ const r=await fetch(p.vps.url.replace(/\/$/,'')+'/db',{headers:p.vps.token?{Authorization:'Bearer '+p.vps.token}:{}});if(r.status===404)return null;if(!r.ok)throw Error('Server '+r.status);const j=await r.json();return j.json||null}
+async function extSave(j,p=provider()){
+ if(p.type==='supabase'){const r=await fetch(`${p.sb.url.replace(/\/$/,'')}/rest/v1/${p.sb.table}`,{method:'POST',headers:{apikey:p.sb.key,Authorization:'Bearer '+p.sb.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:'db',json:j})});if(!r.ok)throw Error('Supabase '+r.status);return}
+ const r=await fetch(p.vps.url.replace(/\/$/,'')+'/db',{method:'PUT',headers:{'Content-Type':'application/json',...(p.vps.token?{Authorization:'Bearer '+p.vps.token}:{})},body:JSON.stringify({json:j})});if(!r.ok)throw Error('Server '+r.status)}
+let pvD=null;
+const pvGet=()=>pvD||(pvD=provider());
+function pvRead(){const p=pvGet(),g=i=>(document.getElementById(i)||{}).value;if(document.getElementById('pv_sbu')){p.sb={url:(g('pv_sbu')||'').trim(),key:(g('pv_sbk')||'').trim(),table:(g('pv_sbt')||'aff_store').trim()};p.vps={url:(g('pv_vu')||'').trim(),token:(g('pv_vt')||'').trim()}}return p}
+function pvType(t){pvRead();pvGet().type=t;render()}
+async function pvTest(){const p=pvRead();if(p.type==='firebase'){toast(fbOnline?T('Firebase متصل','Firebase connected'):T('Firebase غير متصل','Firebase offline'));return}
+ try{await extFetch(p);toast(T('نجح الاتصال ✔','Connection OK ✔'))}catch(e){toast(T('فشل الاتصال: ','Connection failed: ')+e.message)}}
+async function pvCopy(){const p=pvRead();if(p.type==='firebase')return toast(T('اختر Supabase أو الخادم أولًا','Choose Supabase or Server first'));
+ if(!confirm(T('سيتم نسخ البيانات الحالية إلى المزوّد المحدد (استبدال ما فيه). Firebase لن يتغير. متابعة؟','Current data will be copied to the selected provider (overwriting it). Firebase is not modified. Continue?')))return;
+ try{await extSave(dbJson(),p);toast(T('تم نسخ البيانات','Data copied'))}catch(e){toast(T('فشل النسخ: ','Copy failed: ')+e.message)}}
+function pvApply(){const p=pvRead();LS.aff_provider=JSON.stringify(p);toast(T('تم الحفظ، جاري إعادة التحميل…','Saved, reloading…'));setTimeout(()=>location.reload(),700)}
+function dbPage(){const p=pvGet(),r=(t,n)=>`<label><input type="radio" name="pv" ${p.type===t?'checked':''} onchange="pvType('${t}')"> ${n}</label>`;
+ return `<h2>${T('إعدادات قاعدة البيانات والخادم','Database & Server Settings')}</h2>
+ <div class="n"><b>${T('مزوّد الاتصال','Connection provider')}</b><div class="pvr">${r('firebase','Firebase Realtime Database ('+T('الحالي','existing')+')')}${r('supabase','Supabase')}${r('vps',T('خادم خاص / VPS','Self-Hosted Server / VPS'))}</div>
+ <p class="mut">${T('Firebase محمي: لا يتم تعديل إعداداته أو بياناته من هذه الصفحة. عند اختيار مزوّد آخر تُحفظ بيانات التطبيق الرئيسية فيه فقط، بينما تظل مواقع GPS اللحظية والزيارات على Firebase.','Firebase is protected: its config and data are never modified here. With another provider, the main app data is saved there only; live GPS positions and visits stay on Firebase.')}</p></div>
+ ${p.type==='firebase'?`<div class="n"><b>Firebase</b><p class="mut">${T('المشروع','Project')}: ${esc(FB_CFG.projectId)} — ${fbOnline?'🟢 '+T('متصل','Online'):'🔴 '+T('غير متصل','Offline')}</p></div>`:''}
+ ${p.type==='supabase'?`<div class="n"><label>Project URL</label><input id="pv_sbu" dir="ltr" value="${esc(p.sb.url)}" placeholder="https://xxxx.supabase.co"><label>anon / service key</label><input id="pv_sbk" dir="ltr" type="password" value="${esc(p.sb.key)}"><label>${T('اسم الجدول','Table name')}</label><input id="pv_sbt" dir="ltr" value="${esc(p.sb.table)}"><p class="mut">${T('أنشئ الجدول بهذا الأمر ثم فعّل سياسات الوصول (RLS) المناسبة:','Create the table, then add suitable RLS policies:')}</p><pre class="cd">create table aff_store(id text primary key, json text);</pre></div>`:''}
+ ${p.type==='vps'?`<div class="n"><label>${T('رابط الخادم','Server URL')}</label><input id="pv_vu" dir="ltr" value="${esc(p.vps.url)}" placeholder="https://fleet.example.com/api"><label>Bearer token (${T('اختياري','optional')})</label><input id="pv_vt" dir="ltr" type="password" value="${esc(p.vps.token)}"><p class="mut">${T('يتوقع التطبيق:','The app expects:')}</p><pre class="cd">GET  {url}/db  -> {"json":"..."}  (404 if empty)\nPUT  {url}/db  body {"json":"..."}</pre></div>`:''}
+ <div class="r"><button onclick="pvTest()">${T('اختبار الاتصال','Test connection')}</button>${p.type!=='firebase'?`<button onclick="pvCopy()">${T('نسخ البيانات الحالية إلى هذا المزوّد','Copy current data to this provider')}</button>`:''}<button class="p" onclick="pvApply()">${T('حفظ وتطبيق','Save & apply')}</button></div>
+ <p class="mut">${T('تُحفظ مفاتيح الاتصال في متصفح هذا الجهاز فقط.','Connection keys are stored in this device\'s browser only.')}</p>`}
+function postRender(){if(me&&me.role!=='tracker'&&me.role!=='viewer'&&typeof dbReady!=='undefined'&&dbReady)evalMaint();const e=document.getElementById('lgsw');if(e){e.style.display=me?'none':'block';e.innerHTML=langSel()}if(LANG==='en')trNode(document.body)}
+
+const empty=()=>({users:[],vehicles:[],drivers:[],devices:[],companies:[],dailyPlans:[],positions:{}});
+let db=Object.assign(empty(),JSON.parse(LS.aff_db||'{}'));
+db.companies=Array.isArray(db.companies)?db.companies:[];db.dailyPlans=Array.isArray(db.dailyPlans)?db.dailyPlans:[];
+let me=JSON.parse(sessionStorage.aff_me||'null'), page='dash', map, layer, fitted=false;
+let noMerge=false,liveT={},manualStop=false,routeEditingId=null,companyPickerMap=null,companyPickMarker=null,driverRouteMap=null,driverRouteLayer=null,driverRouteFitted=false,trackerCurrentPoint=null;
+const normalizeDB=o=>{const x=Object.assign(empty(),o||{});x.companies=Array.isArray(x.companies)?x.companies:[];x.dailyPlans=Array.isArray(x.dailyPlans)?x.dailyPlans:[];x.users=Array.isArray(x.users)?x.users:[];x.vehicles=Array.isArray(x.vehicles)?x.vehicles:[];x.drivers=Array.isArray(x.drivers)?x.drivers:[];x.devices=Array.isArray(x.devices)?x.devices:[];x.positions=x.positions&&typeof x.positions==='object'?x.positions:{};return x};
+function uid(){return(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'')}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TRUCK_TYPES=[
+  {id:'box',name:'نقل صندوق مغلق'},
+  {id:'semi',name:'قاطرة ومقطورة'},
+  {id:'tanker',name:'صهريج'},
+  {id:'dump',name:'قلاب'},
+  {id:'flatbed',name:'سطحة نقل'}
+];
+const TRUCK_COLORS=[
+  {id:'#00c8ff',name:'أزرق سماوي'}, {id:'#e53935',name:'أحمر'},
+  {id:'#22c55e',name:'أخضر'}, {id:'#f59e0b',name:'برتقالي'},
+  {id:'#a855f7',name:'بنفسجي'}, {id:'#f8fafc',name:'أبيض'},
+  {id:'#64748b',name:'رمادي'}, {id:'#ec4899',name:'وردي'},
+  {id:'#eab308',name:'أصفر'}, {id:'#0f766e',name:'تركواز'}
+];
+function truckSvg(type='box',color='#00c8ff'){
+  if(!TRUCK_COLORS.some(c=>c.id===color))color='#00c8ff';
+  const body={
+    box:`<rect x="4" y="6" width="36" height="23" rx="2" fill="${color}" stroke="#dbeafe" stroke-opacity=".65"/><path d="M9 11h26M9 15h26M9 19h26" stroke="#ffffff" stroke-opacity=".2"/>`,
+    semi:`<rect x="3" y="10" width="28" height="19" rx="2" fill="${color}" stroke="#dbeafe" stroke-opacity=".65"/><path d="M8 15h18M8 20h18" stroke="#fff" stroke-opacity=".25"/><rect x="32" y="25" width="8" height="4" rx="1" fill="#94a3b8"/>`,
+    tanker:`<rect x="3" y="10" width="38" height="17" rx="8.5" fill="${color}" stroke="#dbeafe" stroke-opacity=".7"/><path d="M10 12v13M34 12v13" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>`,
+    dump:`<path d="M5 13L36 7 40 27H5Z" fill="${color}" stroke="#dbeafe" stroke-opacity=".65"/><path d="M10 15l22-4M11 20l24-4" stroke="#fff" stroke-opacity=".3"/><path d="M5 27h35" stroke="#cbd5e1" stroke-width="2"/>`,
+    flatbed:`<rect x="4" y="23" width="37" height="5" rx="1" fill="${color}" stroke="#dbeafe" stroke-opacity=".65"/><rect x="8" y="10" width="9" height="13" rx="1" fill="${color}"/><rect x="20" y="14" width="9" height="9" rx="1" fill="${color}"/><rect x="31" y="9" width="7" height="14" rx="1" fill="${color}"/>`
+  };
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 42" role="img" aria-label="شاحنة"><g>${body[type]||body.box}<path d="M42 20V13Q42 10 46 10H54L64 21V29H42Z" fill="${color}" stroke="#dbeafe" stroke-opacity=".8"/><path d="M47 13h6l6 7H47Z" fill="#bcecff" stroke="#083344" stroke-width=".8"/><path d="M42 22h21" stroke="#0f172a" stroke-opacity=".5"/><circle cx="16" cy="31" r="6" fill="#111827" stroke="#cbd5e1" stroke-width="1.5"/><circle cx="36" cy="31" r="6" fill="#111827" stroke="#cbd5e1" stroke-width="1.5"/><circle cx="54" cy="31" r="6" fill="#111827" stroke="#cbd5e1" stroke-width="1.5"/><circle cx="16" cy="31" r="2" fill="#94a3b8"/><circle cx="36" cy="31" r="2" fill="#94a3b8"/><circle cx="54" cy="31" r="2" fill="#94a3b8"/><rect x="63" y="23" width="3" height="4" rx="1" fill="#fde68a"/></g></svg>`;
+}
+function avatarTypeOf(x){return TRUCK_TYPES.some(t=>t.id===x?.avatarType)?x.avatarType:'box'}
+function avatarColorOf(x){return TRUCK_COLORS.some(c=>c.id===x?.avatarColor)?x.avatarColor:'#00c8ff'}
+function truckAvatar(x,extra=''){return `<span class="truck-cell ${extra}">${truckSvg(avatarTypeOf(x),avatarColorOf(x))}</span>`}
+function truckPicker(prefix, item={}){
+  const type=avatarTypeOf(item),color=avatarColorOf(item);
+  return `<div class="truck-picker" id="${prefix}TruckPicker"><b>اختيار افتار الشاحنة</b><p class="mut">اختر شكل الشاحنة واللون لتمييز السائق أو هاتفه على الخريطة.</p>
+  <label>شكل الشاحنة</label><div class="truck-choices">${TRUCK_TYPES.map(t=>`<label class="truck-choice"><input type="radio" name="avatarType" value="${t.id}" ${type===t.id?'checked':''} onchange="previewTruck('${prefix}')"><span>${truckSvg(t.id,color)}</span><span>${t.name}</span></label>`).join('')}</div>
+  <label>لون الشاحنة</label><div class="truck-colors">${TRUCK_COLORS.map(c=>`<label class="truck-color"><input type="radio" name="avatarColor" value="${c.id}" ${color===c.id?'checked':''} onchange="previewTruck('${prefix}')"><span class="color-dot" style="background:${c.id}"></span><span>${c.name}</span></label>`).join('')}</div>
+  <div class="truck-preview"><span class="truck-preview-icon">${truckSvg(type,color)}</span><span><b>معاينة الافتار</b><br><small class="mut">سيظهر هذا الشكل بجانب السائق على الخريطة</small></span></div></div>`;
+}
+function previewTruck(prefix){
+  const root=document.getElementById(prefix+'TruckPicker');if(!root)return;
+  const type=root.querySelector('input[name="avatarType"]:checked')?.value||'box';
+  const color=root.querySelector('input[name="avatarColor"]:checked')?.value||'#00c8ff';
+  root.querySelector('.truck-preview-icon').innerHTML=truckSvg(type,color);
+  root.querySelectorAll('.truck-choice svg').forEach((svg,i)=>{svg.outerHTML=truckSvg(TRUCK_TYPES[i].id,color)});
+}
+const toast=m=>{const t=$('#toast');t.textContent=trs(m);t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',3500)};
+async function hash(p,s){if(!(window.crypto&&crypto.subtle))throw Error('افتح الصفحة عبر HTTPS أو localhost');const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s+p));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const b64e=(o,i)=>btoa(unescape(encodeURIComponent(JSON.stringify(o,null,i))));
+const b64d=c=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c.replace(/\s/g,'')),x=>x.charCodeAt(0))));
+
+// ---------- قاعدة البيانات: Firebase Realtime Database ----------
+const FB_CFG={apiKey:"AIzaSyAQeQcy41zNUz78VngfQs6EoOAJrzBMsZo",authDomain:"aff-fleet.firebaseapp.com",databaseURL:"https://aff-fleet-default-rtdb.europe-west1.firebasedatabase.app",projectId:"aff-fleet",storageBucket:"aff-fleet.firebasestorage.app",messagingSenderId:"311185727594",appId:"1:311185727594:web:2508657a636ff59cb9aa13"};
+let fb=null,fbOnline=false,lastJson='',liveOn=false,rfT=null,trkSig='';
+try{firebase.initializeApp(FB_CFG);fb=firebase.database()}catch(e){console.error(e)}
+const R=p=>p?fb.ref(p):fb.ref();
+const dbJson=()=>{const o={...db};delete o.positions;return JSON.stringify(o)};
+function applyRemote(o){const pos=db.positions||{};db=normalizeDB(o);db.positions=pos;LS.aff_db=JSON.stringify(db)}
+async function fetchRemote(){
+  if(provider().type!=='firebase'){const j=await extFetch();if(!j)return null;lastJson=j;return JSON.parse(j)}
+  const s=await R('aff/db').get();
+  if(!s.exists())return null;
+  lastJson=s.val().json;return JSON.parse(lastJson);
+}
+async function pull(){try{const rm=await fetchRemote();if(rm)applyRemote(rm)}catch(e){}}
+async function save(){
+  LS.aff_db=JSON.stringify(db);
+  if(provider().type!=='firebase'){try{const j=dbJson();lastJson=j;await extSave(j);toast('تم الحفظ')}catch(e){toast('فشل الحفظ: '+e.message)}return}
+  if(!fb)return;
+  try{
+    const j=dbJson();lastJson=j;
+    await R('aff/db').set({json:j,t:firebase.database.ServerValue.TIMESTAMP});
+    toast('تم الحفظ');
+  }catch(e){toast('فشل الحفظ: '+e.message)}
+}
+// تحديث الشاشة عند وصول بيانات جديدة (بحد أقصى مرة كل ثانية، وبدون المساس بنموذج مفتوح).
+function scheduleRefresh(){
+  if(rfT)return;
+  rfT=setTimeout(()=>{rfT=null;
+    if(!me||document.querySelector('.m'))return;
+    const tg=document.activeElement?.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='TEXTAREA')return;
+    if(page==='map'){if(followId||!map||!map._popup||!map.hasLayer(map._popup))drawMap()}
+    else if(page==='dash'||page==='alerts')render();
+    else if(page==='track'&&me.role==='tracker'){const sg=JSON.stringify([db.companies,db.dailyPlans,visitsDB]);if(sg!==trkSig){trkSig=sg;render()}}
+  },1000);
+}
+function startBaseSync(){
+  if(!fb||provider().type!=='firebase')return;
+  R('.info/connected').on('value',s=>{fbOnline=!!s.val();const e=$('#fbst');if(e)e.textContent=fbOnline?'🟢 متصل':'🔴 غير متصل'});
+  R('aff/db').on('value',s=>{if(!s.exists())return;const j=s.val().json;if(j===lastJson)return;lastJson=j;try{applyRemote(JSON.parse(j))}catch(e){return}scheduleRefresh()});
+}
+function startLiveSync(){
+  if(!fb||liveOn)return;liveOn=true;
+  R('live').on('value',s=>{liveT=s.val()||{};scheduleRefresh()});
+  R('positions').on('value',s=>{db.positions=s.val()||{};scheduleRefresh()});
+  visitsQ=R('visits').orderByKey().startAt(day(Date.now()-62*864e5));
+  visitsQ.on('value',s=>{visitsDB=s.val()||{};scheduleRefresh()});
+}
+function stopLiveSync(){if(!fb||!liveOn)return;liveOn=false;R('live').off();R('positions').off();try{visitsQ&&visitsQ.off()}catch(e){}visitsQ=null;visitsDB={};liveT={}}
+// ---------- الحالات ----------
+const OFFLINE_MS=10*60*1000;
+function posOf(v){const d=db.devices.find(d=>d.vehicleId===v.id);return d?{d,p:db.positions[d.id]}:{}}
+function status(v){
+  const {d,p}=posOf(v);
+  if(!d)return['بدون جهاز','#6b7686'];if(!p)return['لا توجد بيانات','#6b7686'];
+  if(Date.now()-p.t>OFFLINE_MS)return['غير متصل','#d93b3b'];
+  return(p.speed_mps||0)>1?['يتحرك','#1a9d55']:['متوقف','#d98a00'];
+}
+function alerts(){return alertsBase().concat(mtAlerts())}
+function alertsBase(){
+  const a=[];
+  db.vehicles.forEach(v=>{const {d,p}=posOf(v);if(!d||!p)return;
+    if(Date.now()-p.t>OFFLINE_MS)a.push(['critical',`المركبة ${v.name||v.plate} غير متصلة منذ ${Math.round((Date.now()-p.t)/60000)} دقيقة`]);
+    if(p.battery!=null&&p.battery<15)a.push(['warning',`بطارية جهاز ${v.name||v.plate} منخفضة (${p.battery}%)`]);
+    if((p.speed_mps||0)*3.6>(db.maxSpeed||120))a.push(['warning',`${v.name||v.plate} تجاوزت السرعة (${Math.round(p.speed_mps*3.6)} كم/س)`]);
+  });
+  db.drivers.forEach(r=>{if(r.licenseExpiry&&new Date(r.licenseExpiry)<new Date(Date.now()+30*864e5))a.push(['warning',`رخصة السائق ${r.name} تنتهي في ${r.licenseExpiry}`])});
+  return a;
+}
+
+// ---------- الكيانات ----------
+const E={
+  vehicles:{t:'المركبات',f:[['name','الاسم'],['plate','رقم اللوحة'],['type','النوع'],['driverId','السائق','drivers'],['notes','ملاحظات']]},
+  drivers:{t:'السائقون',f:[['name','الاسم'],['phone','الهاتف'],['license','رقم الرخصة'],['licenseExpiry','انتهاء الرخصة','date']]},
+  devices:{t:'أجهزة GPS',f:[['name','اسم الجهاز'],['vehicleId','المركبة','vehicles'],['notes','ملاحظات']]}
+};
+const lookup=(c,id)=>{const x=db[c].find(x=>x.id===id);return x?(x.name||x.plate):''};
+function list(k){
+  const e=E[k];
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2>${e.t}</h2><button class="p" onclick="edit('${k}')">+ إضافة</button></div>
+  <div class="w"><table><tr>${k==='drivers'?'<th>الافتار</th>':''}${e.f.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>
+  ${db[k].map(r=>`<tr>${k==='drivers'?`<td>${truckAvatar(r)}</td>`:''}${e.f.map(f=>`<td>${esc(f[2]&&f[2]!=='date'?lookup(f[2],r[f[0]]):r[f[0]])}</td>`).join('')}<td><button onclick="edit('${k}','${r.id}')">تعديل</button> ${isAdmin()?`<button class="d" onclick="del('${k}','${r.id}')">حذف</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" class="mut">لا توجد بيانات</td></tr>`}</table></div>
+  ${k==='devices'?`<p class="mut">معرّف الجهاز يُستخدم في ملف قاعدة البيانات: positions[معرّف الجهاز]. يظهر في عمود التعديل عند فتح الجهاز.</p>`:''}`;
+}
+function edit(k,id){
+  const e=E[k],r=db[k].find(x=>x.id===id)||{};
+  const m=document.createElement('div');m.className='m';
+  m.innerHTML=`<form><h3>${e.t}</h3>${e.f.map(f=>`<label>${f[1]}</label>`+(f[2]&&f[2]!=='date'
+    ?`<select name="${f[0]}"><option value="">—</option>${db[f[2]].map(o=>`<option value="${o.id}" ${r[f[0]]===o.id?'selected':''}>${esc(o.name||o.plate)}</option>`).join('')}</select>`
+    :`<input name="${f[0]}" type="${f[2]||'text'}" value="${esc(r[f[0]])}">`)).join('')}
+    ${k==='drivers'?truckPicker('driverAvatar',r):''}
+    ${k==='devices'&&r.id?`<p class="mut">المعرّف: <code>${r.id}</code></p>`:''}
+    <div class="r"><button class="p">حفظ</button><button type="button" onclick="this.closest('.m').remove()">إلغاء</button></div></form>`;
+  m.querySelector('form').onsubmit=async ev=>{
+    ev.preventDefault();const o=r.id?r:{id:uid()};
+    new FormData(ev.target).forEach((v,n)=>o[n]=v.trim());
+    if(!r.id)db[k].push(o);m.remove();await save();render();
+  };
+  document.body.appendChild(m);
+}
+async function del(k,id){if(!confirm('تأكيد الحذف؟'))return;db[k]=db[k].filter(x=>x.id!==id);await save();render()}
+
+// ---------- الصفحات ----------
+function dash(){return dashBase()+mtDashWidget()}
+function dashBase(){
+  const st=db.vehicles.map(v=>status(v)[0]),n=s=>st.filter(x=>x===s).length;
+  return `<h2>لوحة التحكم</h2><div class="g">${[['🚗 المركبات',db.vehicles.length],['🟢 تتحرك',n('يتحرك')],['🟠 متوقفة',n('متوقف')],['🔴 غير متصلة',n('غير متصل')],['🔔 التنبيهات',alerts().length],['🏢 زيارات اليوم',visitsTodayTxt()]].map(x=>`<div class="c"><h3>${x[1]}</h3><span>${x[0]}</span></div>`).join('')}</div>
+  <div class="w"><table><tr><th>المركبة</th><th>السائق</th><th>الحالة</th><th>السرعة</th><th>البطارية</th><th>آخر تحديث</th></tr>
+  ${db.vehicles.map(v=>{const {p}=posOf(v),s=status(v);return `<tr><td>${esc(v.name||v.plate)}</td><td>${esc(lookup('drivers',v.driverId))}</td><td><span class="t" style="background:${s[1]}">${s[0]}</span></td><td>${p?Math.round((p.speed_mps||0)*3.6)+' كم/س':'—'}</td><td>${p&&p.battery!=null?p.battery+'%':'—'}</td><td>${p?new Date(p.t).toLocaleString(LOCALE):'—'}</td></tr>`}).join('')||'<tr><td colspan="6" class="mut">أضف مركبات وأجهزة أولاً</td></tr>'}</table></div>`;
+}
+function alertsPage(){const a=alerts();return `<h2>التنبيهات</h2>`+(a.map(x=>`<div class="n" style="border-inline-start:4px solid ${x[0]==='critical'?'var(--er)':'var(--wa)'}">${esc(x[1])}</div>`).join('')||'<p class="mut">لا توجد تنبيهات</p>')}
+function mapPage(){return `<h2>الخريطة المباشرة</h2><p class="mut">اضغط على اسم المتتبع بالأعلى لتتبّعه مباشرة (الخريطة تتحرك معه). سحب الخريطة بإيدك يوقف التتبع. اسم كل متتبع ظاهر فوق شاحنته.</p><div id="trk-bar" class="trk-bar"></div><div id="trk-info" class="trk-info"></div><div id="map"></div>`}
+let followId=null,trkMk={},trkSeq=0;
+/* ---- مسار اليوم على الخريطة المباشرة ---- */
+let showPaths=false,tp={},tpBusy={};
+const okPt=x=>x&&x.t&&Number.isFinite(x.lat)&&Number.isFinite(x.lng);
+const mapPt=x=>({lat:x.lat,lng:x.lng,s:x.s==null?null:x.s,t:x.t});
+function ensureTP(id){
+  if(!fb||tpBusy[id])return;const d=day(Date.now()),e=tp[id];
+  if(e&&e.day===d&&Date.now()-e.at<30000)return;
+  tpBusy[id]=1;
+  R(`tracks/${id}/${d}`).get().then(sn=>{
+    tp[id]={pts:sn.exists()?Object.values(sn.val()).filter(okPt).map(mapPt).sort((a,b)=>a.t-b.t):[],at:Date.now(),day:d};
+  }).catch(()=>{tp[id]=tp[id]||{pts:[],at:Date.now(),day:d}}).finally(()=>{tpBusy[id]=0;if(page==='map')drawMap()});
+}
+/* نقاط اليوم المحفوظة + آخر نقطة حيّة (لأن الحفظ في المسار يتم كل 15 ثانية) */
+function trackToday(id){
+  const base=(tp[id]&&tp[id].pts)||[],lv=liveT[id];
+  if(lv&&Number.isFinite(lv.lat)&&Number.isFinite(lv.lng)&&(!base.length||lv.t>base[base.length-1].t))return base.concat([{lat:lv.lat,lng:lv.lng,s:lv.s==null?null:lv.s,t:lv.t}]);
+  return base;
+}
+/* يقسم المسار عند انقطاع الإشارة (أكثر من 15 دقيقة) حتى لا يُرسم خط وهمي مستقيم */
+function segs(p){const out=[];let cur=[];p.forEach((x,i)=>{if(i&&x.t-p[i-1].t>GAP_MS){if(cur.length>1)out.push(cur);cur=[]}cur.push([x.lat,x.lng])});if(cur.length>1)out.push(cur);return out}
+function togglePaths(){showPaths=!showPaths;drawMap()}
+const ago=t=>{const x=Math.max(0,Math.round((Date.now()-t)/1000));return x<60?x+' ث':x<3600?Math.round(x/60)+' د':Math.round(x/3600)+' س'};
+function drawMap(){
+  const el=$('#map');if(!el||!window.L)return;
+  if(!map||map.getContainer()!==el){if(map)map.remove();map=L.map(el).setView([30.0444,31.2357],6);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'}).addTo(map);layer=L.layerGroup().addTo(map);fitted=false;addFS(map);map.on('dragstart',()=>{if(followId){followId=null;drawTrkBar()}})}
+  layer.clearLayers();trkMk={};const pts=[];
+  // الشركات: علامة ثابتة مع اسم ظاهر دائمًا.
+  (db.companies||[]).forEach(c=>{const lat=Number(c.lat),lng=Number(c.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;pts.push([lat,lng]);
+    const cm=L.marker([lat,lng],{icon:L.divIcon({className:'aff-truck-div',html:`<div class="company-pin"><span>🏢</span></div>`,iconSize:[30,30],iconAnchor:[15,24]})}).addTo(layer);
+    cm.bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-16],className:'company-tooltip'});
+    cm.bindPopup(`<b>🏢 ${esc(c.name)}</b><br>${esc(c.address||'')}<br><small>${lat.toFixed(6)}, ${lng.toFixed(6)}</small>${gmA(lat,lng)}`);
+  });
+  db.vehicles.forEach(v=>{const {p}=posOf(v);if(!p)return;const s=status(v);pts.push([p.lat,p.lng]);
+    const driver=db.drivers.find(d=>d.id===v.driverId)||{};
+    const marker=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'aff-truck-div',html:`<div class="aff-truck-marker">${truckSvg(avatarTypeOf(driver),avatarColorOf(driver))}</div>`,iconSize:[48,42],iconAnchor:[24,21]})}).addTo(layer);
+    marker.bindTooltip(esc(v.name||v.plate),{permanent:true,direction:'top',offset:[0,-20],className:'trk-tooltip'});
+    marker.bindPopup(`<b>${esc(v.name||v.plate)}</b><br>${esc(v.plate)}<br>${s[0]} – ${Math.round((p.speed_mps||0)*3.6)} كم/س<br>${esc(lookup('drivers',v.driverId))}${gmA(p.lat,p.lng)}`)});
+  // المتتبعون (هواتف السائقين): الاسم ظاهر دائمًا فوق الشاحنة، والشارع يظهر عند الضغط.
+  db.users.filter(u=>u.role==='tracker').forEach(u=>{const p=liveT[u.id];if(!p)return;pts.push([p.lat,p.lng]);const off=Date.now()-p.t>OFFLINE_MS;
+    const mk=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'aff-truck-div',html:`<div class="aff-truck-marker" style="${off?'opacity:.58;':''}">${truckSvg(avatarTypeOf(u),avatarColorOf(u))}</div>`,iconSize:[48,42],iconAnchor:[24,21]})}).addTo(layer);
+    mk.bindTooltip(esc(u.name),{permanent:true,direction:'top',offset:[0,-20],className:'trk-tooltip'+(off?' off':'')});
+    mk.bindPopup(`<b>${esc(u.name)}</b><br>${off?'آخر ظهور':'متصل'} ${new Date(p.t).toLocaleTimeString(LOCALE)}<br><span id="pa">…</span>${gmA(p.lat,p.lng)}`);
+    mk.on('popupopen',async()=>{const e=document.getElementById('pa');if(e)try{e.textContent='🛣️ '+fmtAddr(await addr(p.lat,p.lng),'road')}catch(x){e.textContent='تعذّر جلب العنوان'}});
+    trkMk[u.id]=mk;
+  });
+  // مسار اليوم: للمتتبع المحدّد دائمًا، ولكل المتتبعين عند تفعيل زر «مسارات اليوم».
+  db.users.filter(u=>u.role==='tracker'&&(showPaths||followId===u.id)).forEach(u=>{
+    ensureTP(u.id);const tt=trackToday(u.id);if(tt.length<2)return;const col=avatarColorOf(u);
+    segs(tt).forEach(sg=>{L.polyline(sg,{weight:6,color:'#000',opacity:.35}).addTo(layer);L.polyline(sg,{weight:3.5,color:col,opacity:.95}).addTo(layer)});
+  });
+  if(followId&&liveT[followId]){const q=liveT[followId];map.setView([q.lat,q.lng],map.getZoom(),{animate:false});fitted=true}
+  else if(pts.length&&!fitted){map.fitBounds(pts,{padding:[40,40],maxZoom:15});fitted=true}
+  drawTrkBar();
+}
+function drawTrkBar(){
+  const bar=$('#trk-bar'),info=$('#trk-info');if(!bar||!info)return;
+  const trs=db.users.filter(u=>u.role==='tracker');
+  if(!trs.length){bar.innerHTML='';info.textContent='';return}
+  bar.innerHTML=`<button class="trk-chip ${followId?'':'on'}" onclick="showAllTrk()">🗺️ عرض الكل</button><button class="trk-chip ${showPaths?'on':''}" onclick="togglePaths()">〰️ مسارات اليوم</button>`+trs.map(u=>{const p=liveT[u.id],on=p&&Date.now()-p.t<=OFFLINE_MS;return `<button class="trk-chip ${followId===u.id?'on':''}" data-id="${esc(u.id)}" onclick="selTrk(this.dataset.id)"><i class="trk-dot" style="background:${p?(on?'#00e58b':'#8ba4bf'):'#ff496c'}"></i>${esc(u.name)}</button>`}).join('');
+  if(!followId){info.textContent='اختر اسم المتتبع من الأعلى لتتبّعه على الخريطة.';return}
+  const u=trs.find(x=>x.id===followId),p=liveT[followId];
+  if(!u||!p){info.textContent='لا توجد بيانات موقع لهذا المتتبع اليوم.';return}
+  const on=Date.now()-p.t<=OFFLINE_MS,my=++trkSeq;
+  const tt=trackToday(followId),ex=tt.length>1?(a=>` · <b>اليوم:</b> ${(a.dist/1000).toFixed(1)} كم · تحرك ${fm(a.mov)} · توقف ${fm(a.stp)}`)(analyze(tt)):'';
+  info.innerHTML=`<b>${esc(u.name)}</b> · ${on?'🟢 متصل':'⚪ آخر ظهور'} منذ ${ago(p.t)} · ${p.s==null?'—':Math.round(p.s*3.6)+' كم/س'}${ex} · <span id="trk-ad">…</span>`;
+  addr(p.lat,p.lng).then(o=>{if(my!==trkSeq)return;const e=$('#trk-ad');if(e)e.textContent='🛣️ '+fmtAddr(o,'road')}).catch(()=>{const e=$('#trk-ad');if(e)e.textContent='تعذّر جلب العنوان'});
+}
+function selTrk(id){
+  const p=liveT[id];if(!p){toast('لا توجد بيانات موقع لهذا المتتبع اليوم');return}
+  followId=id;fitted=true;if(map)map.setView([p.lat,p.lng],Math.max(map.getZoom(),16));drawMap();
+}
+function showAllTrk(){followId=null;fitted=false;drawMap()}
+function drawDriverRouteMap(){
+  const el=$('#driverRouteMap');if(!el||!window.L||!me)return;
+  if(!driverRouteMap||driverRouteMap.getContainer()!==el){try{driverRouteMap?.remove()}catch(e){}driverRouteMap=L.map(el).setView([30.0444,31.2357],6);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(driverRouteMap);driverRouteLayer=L.layerGroup().addTo(driverRouteMap);driverRouteFitted=false;addFS(driverRouteMap);}
+  driverRouteLayer.clearLayers();const pts=[];
+  activePlansForUser(me.id).forEach(plan=>(plan.companyIds||[]).forEach(id=>{const c=companyById(id);if(!c)return;const lat=Number(c.lat),lng=Number(c.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;pts.push([lat,lng]);
+    const done=isDone(plan,id);const mark=L.marker([lat,lng],{icon:L.divIcon({className:'aff-truck-div',html:`<div class="company-pin" style="background:${done?'#16a34a':'#ef4444'}"><span>🏢</span></div>`,iconSize:[30,30],iconAnchor:[15,24]})}).addTo(driverRouteLayer);
+    mark.bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-16],className:'company-tooltip'}).bindPopup(`<b>${esc(c.name)}</b><br>${esc(c.address||'')}<br>${done?'تم تسجيل الزيارة':'زيارة مطلوبة'}`);
+  }));
+  if(trackerCurrentPoint){const q=trackerCurrentPoint;pts.push([q.lat,q.lng]);L.circleMarker([q.lat,q.lng],{radius:8,color:'#fff',weight:2,fillColor:'#00c8ff',fillOpacity:1}).addTo(driverRouteLayer).bindPopup('موقعي الحالي');}
+  if(pts.length&&!driverRouteFitted){driverRouteMap.fitBounds(pts,{padding:[35,35],maxZoom:15});driverRouteFitted=true;}
+}
+// ---------- الشركات المحفوظة وخطط زيارات اليوم ----------
+function companyById(id){return db.companies.find(c=>c.id===id)}
+/* Google Maps via official URLs: free, no API key. Opens the Google Maps website on a PC and the Google Maps app on a phone. */
+function gmLink(la,lo){return `https://www.google.com/maps/search/?api=1&query=${Number(la)},${Number(lo)}`}
+function gmDirLink(pts){if(!pts||pts.length<2)return gmLink(pts?.[0]?.lat,pts?.[0]?.lng);const f=pts[0],l=pts[pts.length-1],mid=pts.slice(1,-1),n=Math.min(9,mid.length),w=[];for(let i=0;i<n;i++){const p=mid[Math.floor((i+0.5)*mid.length/n)];w.push(p.lat+','+p.lng)}
+  return `https://www.google.com/maps/dir/?api=1&origin=${f.lat},${f.lng}&destination=${l.lat},${l.lng}&travelmode=driving`+(w.length?`&waypoints=${w.join('%7C')}`:'')}
+function gmA(la,lo){return `<br><a href="${gmLink(la,lo)}" target="_blank" rel="noopener">فتح في Google Maps</a>`}
+function companyLocationLink(c){return gmLink(c.lat,c.lng)}
+function parseMapInput(s){
+  s=String(s||'').trim();let m;
+  const ok=(a,b)=>{a=Number(a);b=Number(b);return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180?[a,b]:null};
+  try{s=decodeURIComponent(s)}catch(e){}
+  if(m=s.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/))return ok(m[1],m[2]);
+  if(m=s.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/))return ok(m[1],m[2]);
+  if(m=s.match(/[?&](?:q|ll|query|destination|center)=\+?(-?\d+(?:\.\d+)?)[, ]+(-?\d+(?:\.\d+)?)/))return ok(m[1],m[2]);
+  if(m=s.match(/^(-?\d+(?:\.\d+)?)\s*[,،\s]\s*(-?\d+(?:\.\d+)?)$/))return ok(m[1],m[2]);
+  return null;
+}
+let cpSeq=0;
+function editCompany(id){
+  const r=companyById(id)||{};const m=document.createElement('div');m.className='m';
+  m.innerHTML=`<form><h3>${r.id?'تعديل الشركة / نقطة الزيارة':'حفظ شركة أو نقطة جديدة'}</h3>
+    <p class="mut">اكتب اسم الشركة ثم حدّد موقعها بأي طريقة: ابحث بالعنوان، أو الصق رابط Google Maps، أو اضغط على الخريطة، أو استخدم موقعك الحالي. الإحداثيات تُسجَّل تلقائيًا.</p>
+    <label>اسم الشركة (سيظهر على الخريطة)</label><input name="name" value="${esc(r.name||'')}" required maxlength="100" placeholder="مثال: ارومتك Aromatic Flavours & Fragrances - AFF">
+    <label>ابحث بالعنوان أو الصق رابط Google Maps</label>
+    <div style="display:flex;gap:6px"><input id="cpQ" type="search" autocomplete="off" placeholder="مثال: سوق العبور أو رابط Google Maps" style="flex:1;width:auto;min-width:0"><button type="button" class="p" id="cpGo">بحث</button><button type="button" id="cpMe" title="استخدم موقعي الحالي">📍</button></div>
+    <div id="cpRes"></div>
+    <div id="companyPickMap" class="company-pick-map"></div>
+    <p id="companyPickHint" class="mut">لم يتم اختيار موقع بعد. اضغط على الخريطة أو ابحث بالعنوان.</p>
+    <label>العنوان / ملاحظات الوصول (يُملأ تلقائيًا ويمكنك تعديله)</label><input name="address" id="cpAddr" value="${esc(r.address||'')}" maxlength="240" placeholder="المنطقة، الشارع، علامة مميزة" ${r.address?'data-touched="1"':''}>
+    <input type="hidden" id="companyLat" name="lat" value="${r.lat??''}"><input type="hidden" id="companyLng" name="lng" value="${r.lng??''}">
+    <div class="r" style="margin-top:12px"><button class="p" type="submit">حفظ الموقع</button><button type="button" onclick="closeCompanyEditor(this)">إلغاء</button></div></form>`;
+  const ad=m.querySelector('#cpAddr'),q=m.querySelector('#cpQ'),res=m.querySelector('#cpRes');
+  ad.addEventListener('input',()=>{ad.dataset.touched=ad.value.trim()?'1':''});
+  m.querySelector('form').onsubmit=async ev=>{
+    ev.preventDefault();const f=new FormData(ev.target),name=String(f.get('name')||'').trim(),address=String(f.get('address')||'').trim(),
+      rl=String(f.get('lat')||'').trim(),rg=String(f.get('lng')||'').trim(),lat=Number(rl),lng=Number(rg);
+    if(!name)return toast('اكتب اسم الشركة');
+    if(!rl||!rg||!Number.isFinite(lat)||!Number.isFinite(lng)||lat < -90||lat > 90||lng < -180||lng > 180)return toast('حدّد موقع الشركة: ابحث بالعنوان أو اضغط على الخريطة');
+    const o=r.id?r:{id:uid(),createdAt:Date.now()};Object.assign(o,{name,address,lat,lng,updatedAt:Date.now()});
+    if(!r.id)db.companies.push(o);closeCompanyEditor(m);await save();render();toast('تم حفظ الشركة وموقعها');
+  };
+  /* بحث بالعنوان (OpenStreetMap) أو لصق رابط/إحداثيات من Google Maps */
+  let found=[];
+  const doSearch=async()=>{
+    const t=q.value.trim();if(!t)return;
+    const ll=parseMapInput(t);
+    if(ll){res.innerHTML='';setCompanyPickPoint(ll[0],ll[1],{fly:true});return}
+    if(/^https?:\/\/(maps\.app\.goo\.gl|goo\.gl|g\.co)\//i.test(t)){res.innerHTML='<p class="mut">الرابط المختصر لا يمكن قراءته مباشرة. افتحه في المتصفح ثم انسخ الرابط الكامل من شريط العنوان والصقه هنا.</p>';return}
+    res.innerHTML='<p class="mut">جاري البحث…</p>';
+    try{
+      const b=companyPickerMap?.getBounds(),vb=b?`&viewbox=${b.getWest()},${b.getNorth()},${b.getEast()},${b.getSouth()}`:'';
+      const rs=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6&accept-language=ar${vb}&q=${encodeURIComponent(t)}`);
+      if(!rs.ok)throw Error(rs.status);found=await rs.json();
+    }catch(e){res.innerHTML='<p class="mut">تعذّر البحث الآن، حاول مرة أخرى أو اضغط على الخريطة.</p>';return}
+    if(!found.length){res.innerHTML='<p class="mut">لا توجد نتائج. جرّب كتابة المنطقة أو المدينة معه، أو اضغط على الخريطة.</p>';return}
+    res.innerHTML=found.map((x,i)=>`<button type="button" data-i="${i}" style="display:block;width:100%;text-align:start;margin:4px 0;font-size:13px;white-space:normal">📍 ${esc(x.display_name)}</button>`).join('');
+  };
+  m.querySelector('#cpGo').onclick=doSearch;
+  q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch()}});
+  q.addEventListener('paste',()=>setTimeout(()=>{if(parseMapInput(q.value))doSearch()},0));
+  res.addEventListener('click',e=>{
+    const bt=e.target.closest('button[data-i]');if(!bt)return;const x=found[+bt.dataset.i];if(!x)return;
+    const nm=m.querySelector('[name=name]');if(!nm.value.trim())nm.value=String(x.name||x.display_name.split('،')[0]||'').slice(0,100);
+    if(ad.dataset.touched!=='1'){const a=x.address||{},rd=roadOf(a),ar=areaOf(a);ad.value=((rd?rd+(ar?'، ':''):'')+ar)||x.display_name.slice(0,240)}
+    res.innerHTML='';setCompanyPickPoint(+x.lat,+x.lon,{fly:true,noAddr:true});
+  });
+  m.querySelector('#cpMe').onclick=()=>{
+    if(!navigator.geolocation)return toast('المتصفح لا يدعم تحديد الموقع');
+    navigator.geolocation.getCurrentPosition(p=>setCompanyPickPoint(p.coords.latitude,p.coords.longitude,{fly:true}),()=>toast('تعذّر الحصول على موقعك، اسمح للمتصفح بالوصول للموقع'),{enableHighAccuracy:true,timeout:15000});
+  };
+  document.body.appendChild(m);
+  setTimeout(()=>{
+    const el=m.querySelector('#companyPickMap');if(!el||!window.L)return;
+    const has=r.lat!==undefined&&r.lat!==''&&r.lng!==undefined&&r.lng!==''&&Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng));
+    const center=has?[Number(r.lat),Number(r.lng)]:[30.0444,31.2357];
+    companyPickerMap=L.map(el).setView(center,has?15:6);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(companyPickerMap);
+    if(has)setCompanyPickPoint(center[0],center[1],{noAddr:true});
+    companyPickerMap.on('click',e=>setCompanyPickPoint(e.latlng.lat,e.latlng.lng));
+    setTimeout(()=>companyPickerMap?.invalidateSize(),100);
+  },80);
+}
+async function setCompanyPickPoint(lat,lng,o={}){
+  lat=Number(lat);lng=Number(lng);
+  const a=$('#companyLat'),b=$('#companyLng'),hint=$('#companyPickHint'),ad=$('#cpAddr');if(a)a.value=lat.toFixed(6);if(b)b.value=lng.toFixed(6);
+  if(hint)hint.textContent='✅ تم تحديد الموقع على الخريطة'+(o.noAddr?'':'… جاري جلب العنوان');
+  if(companyPickerMap&&window.L){
+    if(companyPickMarker)companyPickMarker.setLatLng([lat,lng]);
+    else{companyPickMarker=L.marker([lat,lng],{draggable:true}).addTo(companyPickerMap);companyPickMarker.on('dragend',()=>{const p=companyPickMarker.getLatLng();setCompanyPickPoint(p.lat,p.lng)})}
+    if(o.fly)companyPickerMap.setView([lat,lng],Math.max(companyPickerMap.getZoom(),16));
+  }
+  if(o.noAddr||!ad)return;
+  const my=++cpSeq;
+  try{const x=await addr(lat,lng);if(my!==cpSeq)return;const t=fmtAddr(x,'road');
+    if(ad.dataset.touched!=='1')ad.value=t;if(hint)hint.textContent='✅ تم تحديد الموقع: '+t;
+  }catch(e){if(my===cpSeq&&hint)hint.textContent='✅ تم تحديد الموقع (تعذّر جلب العنوان، اكتبه يدويًا إن أردت)'}
+}
+function closeCompanyEditor(el){
+  const modal=el?.matches?.('.m')?el:el?.closest?.('.m');
+  try{companyPickerMap?.remove()}catch(e){}companyPickerMap=null;companyPickMarker=null;modal?.remove();
+}
+async function deleteCompany(id){
+  const c=companyById(id);if(!c)return;if(!confirm(`حذف موقع الشركة "${c.name}"؟ ستُزال أيضًا من خطط الزيارات التي لم تنفذ.`))return;
+  db.companies=db.companies.filter(x=>x.id!==id);
+  db.dailyPlans=(db.dailyPlans||[]).map(p=>({...p,companyIds:(p.companyIds||[]).filter(x=>x!==id),completedIds:(p.completedIds||[]).filter(x=>x!==id)})).filter(p=>p.companyIds.length);
+  await save();render();toast('تم حذف نقطة الشركة من النظام');
+}
+function editPlan(id){routeEditingId=id||null;render()}
+async function deletePlan(id){if(!isAdmin())return toast('حذف خطط الزيارات متاح للمدير العام فقط');const p=(db.dailyPlans||[]).find(x=>x.id===id);if(!p)return;if(!confirm(`حذف خطة زيارات يوم ${p.date}؟`))return;db.dailyPlans=db.dailyPlans.filter(x=>x.id!==id);if(routeEditingId===id)routeEditingId=null;await save();render();toast('تم حذف خطة الزيارات')}
+async function savePlanFromForm(ev){
+  ev.preventDefault();if(!isAdmin()&&me.role!=='manager')return toast('ليس لديك صلاحية تعديل خطط الزيارات');
+  const f=new FormData(ev.target),date=String(f.get('date')||''),driverId=String(f.get('driverId')||''),userId=String(f.get('userId')||''),companyIds=[...new Set(f.getAll('companyIds').map(String))].filter(id=>companyById(id));
+  if(!date)return toast('حدد تاريخ الزيارات');if(!userId)return toast('اختر حساب هاتف السائق الذي ستصل إليه الخطة');if(!companyIds.length)return toast('اختر شركة واحدة على الأقل');
+  const tracker=db.users.find(u=>u.id===userId&&u.role==='tracker');if(!tracker)return toast('اختر حسابًا من نوع متتبع (موبايل)');
+  let plan=routeEditingId?(db.dailyPlans||[]).find(p=>p.id===routeEditingId):null;
+  if(!plan){plan={id:uid(),createdAt:Date.now(),completedIds:[]};db.dailyPlans=db.dailyPlans||[];db.dailyPlans.push(plan)}
+  Object.assign(plan,{date,driverId,userId,companyIds,completedIds:(plan.completedIds||[]).filter(id=>companyIds.includes(id)),updatedAt:Date.now()});
+  routeEditingId=null;await save();render();toast('تم حفظ خطة الزيارات');
+}
+function companiesRoutesPage(){
+  const editing=(db.dailyPlans||[]).find(p=>p.id===routeEditingId)||null;
+  const trackers=db.users.filter(u=>u.role==='tracker');
+  return `<h2>الشركات المحفوظة وخطوط السير</h2>
+  <div class="route-note">احفظ كل شركة كنقطة ثابتة على الخريطة. بعد ذلك اختر شركات اليوم واربطها بالسائق وحساب هاتفه. <b>لا يوجد ترتيب إلزامي للزيارات؛ السائق يقرر أي شركة يزورها أولًا.</b></div>
+  <div class="n"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>مواقع الشركات المحفوظة</b><p class="mut">تظهر أسماء الشركات بجانب نقاطها على الخريطة المباشرة.</p></div><button class="p" onclick="editCompany()">+ حفظ شركة / نقطة</button></div>
+    ${db.companies.length?`<div class="company-list">${db.companies.map(c=>`<div class="company-card"><b>🏢 ${esc(c.name)}</b><span class="mut">${esc(c.address||'لم يُسجّل عنوان')}</span><small class="mut">${Number(c.lat).toFixed(6)}, ${Number(c.lng).toFixed(6)}</small><div class="actions"><button onclick="focusCompany('${c.id}')">عرض على الخريطة</button><button onclick="editCompany('${c.id}')">تعديل</button>${isAdmin()?`<button class="d" onclick="deleteCompany('${c.id}')">حذف</button>`:''}</div></div>`).join('')}</div>`:'<p class="mut">لا توجد شركات محفوظة بعد. اضغط «حفظ شركة / نقطة» ثم حدد موقعها على الخريطة.</p>'}
+  </div>
+  <div class="n"><h3>${editing?'تعديل خطة زيارات':'تعيين شركات لزيارات يومية'}</h3><p class="mut">اختر التاريخ، السائق، حساب الهاتف، والشركات المطلوب زيارتها. القائمة غير مرتبة إلزاميًا.</p>
+    ${!db.companies.length?'<p class="mut">احفظ شركة واحدة على الأقل قبل إنشاء خطة زيارات.</p>':!trackers.length?'<p class="mut">أنشئ أولًا حسابًا بصلاحية «متتبع (موبايل)» من صفحة المستخدمين لربط خطة الزيارات بهاتف السائق.</p>':`<form onsubmit="savePlanFromForm(event)">
+      <label>تاريخ الزيارات</label><input name="date" type="date" value="${esc(editing?.date||day(Date.now()))}" required>
+      <label>السائق المسؤول (اختياري)</label><select name="driverId"><option value="">— اختر السائق —</option>${db.drivers.map(d=>`<option value="${d.id}" ${editing?.driverId===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select>
+      <label>حساب هاتف السائق الذي ستصل إليه الخطة</label><select name="userId" required><option value="">— اختر حساب الهاتف —</option>${trackers.map(u=>`<option value="${u.id}" ${editing?.userId===u.id?'selected':''}>${esc(u.name)} — ${esc(u.email)}</option>`).join('')}</select>
+      <label>الشركات المطلوب زيارتها</label><div class="plan-company-options">${db.companies.map(c=>`<label class="plan-company-option"><input type="checkbox" name="companyIds" value="${c.id}" ${(editing?.companyIds||[]).includes(c.id)?'checked':''}><span><b>${esc(c.name)}</b><small>${esc(c.address||'العنوان غير مسجل')}</small></span></label>`).join('')}</div>
+      <p class="mut">اختيار الشركات يحدد الوجهات المطلوبة فقط، وليس ترتيب البداية أو ترتيب الزيارات.</p>
+      <div class="r"><button class="p" type="submit">${editing?'حفظ التعديلات':'حفظ خطة الزيارات'}</button>${editing?'<button type="button" onclick="editPlan(null)">إلغاء التعديل</button>':''}</div>
+    </form>`}
+  </div>
+  <div class="n"><h3>خطط الزيارات المحفوظة</h3>${(db.dailyPlans||[]).length?`<div class="w"><table><tr><th>التاريخ</th><th>السائق</th><th>حساب الهاتف</th><th>عدد الشركات</th><th>المكتمل</th><th></th></tr>${[...(db.dailyPlans||[])].sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(p=>{const u=db.users.find(x=>x.id===p.userId),d=db.drivers.find(x=>x.id===p.driverId);return `<tr><td>${esc(p.date)}</td><td>${esc(d?.name||'—')}</td><td>${esc(u?.name||'حساب محذوف')}</td><td>${(p.companyIds||[]).length}</td><td>${(p.companyIds||[]).filter(id=>isDone(p,id)).length}</td><td><button onclick="editPlan('${p.id}')">تعديل</button> ${isAdmin()?`<button class="d" onclick="deletePlan('${p.id}')">حذف</button>`:''}</td></tr>`}).join('')}</table></div>`:'<p class="mut">لم يتم إنشاء خطط زيارات بعد.</p>'}</div>`;
+}
+function focusCompany(id){
+  const c=companyById(id);if(!c)return;go('map');setTimeout(()=>{if(map){map.setView([Number(c.lat),Number(c.lng)],16);const m=layer?._layers&&Object.values(layer._layers).find(x=>x.getLatLng&&Math.abs(x.getLatLng().lat-Number(c.lat))<0.00001&&Math.abs(x.getLatLng().lng-Number(c.lng))<0.00001);m?.openPopup()}},300);
+}
+function activePlansForUser(userId,date=day(Date.now())){return (db.dailyPlans||[]).filter(p=>p.userId===userId&&p.date===date)}
+function togglePlanStop(planId,companyId){
+  const plan=(db.dailyPlans||[]).find(p=>p.id===planId);if(!plan)return;
+  if(me?.role==='tracker'&&plan.userId!==me.id)return toast('هذه الخطة ليست مرتبطة بحسابك');
+  plan.completedIds=plan.completedIds||[];
+  const man=plan.completedIds.includes(companyId),rec=visitRec(plan.date,plan.userId,companyId),done=man||!!rec;
+  let changed=false;
+  if(done){
+    if(man){plan.completedIds=plan.completedIds.filter(id=>id!==companyId);changed=true}
+    /* إلغاء زيارة سجّلها النظام تلقائيًا: نعلّم السجل «ملغي» بدل حذفه حتى لا يُسجَّل من جديد */
+    if(rec){rec.cancelled=1;R(`visits/${plan.date}/${plan.userId}/${companyId}`).update({cancelled:1}).catch(()=>{})}
+  }else{plan.completedIds=[...plan.completedIds,companyId];changed=true}
+  const msg=done?'تم إلغاء علامة إتمام الزيارة':'تم تسجيل زيارة الشركة';
+  if(changed)save().then(()=>{render();toast(msg)});else{render();toast(msg)}
+}
+function settings(){return settingsBase()+appearanceUI()}
+function settingsBase(){
+  return `<h2>الإعدادات وقاعدة البيانات</h2>
+  <div class="n"><b>قاعدة البيانات: Firebase Realtime Database</b>
+  <p class="mut">المشروع: aff-fleet (أوروبا). الحالة: <span id="fbst">${fbOnline?'🟢 متصل':'🔴 غير متصل'}</span><br>المواقع تصل لحظيًا بدون استعلام دوري، ولا حاجة لأي توكن على هواتف السائقين.</p></div>
+  <div class="n"><b>نسخة احتياطية واسترجاع</b>
+  <p class="mut"><b>نسخة البيانات:</b> المستخدمون والمركبات والسائقون والشركات وخطط الزيارات.<br><b>النسخة الكاملة:</b> نفس ما سبق + مسارات المتتبعين للفترة التي تحددها.<br>الاسترجاع يستبدل البيانات الحالية، وتُنزَّل نسخة من الحالية تلقائيًا قبل الاستبدال. الملف يحتوي كلمات مرور مشفّرة (hash) فاحفظه في مكان آمن.</p>
+  <div class="r"><button onclick="exp()">تصدير نسخة البيانات</button><button onclick="$('#imp').click()">استرجاع من ملف</button><input id="imp" type="file" accept=".json" hidden onchange="imp(this.files[0])"></div>
+  <label>مسارات النسخة الكاملة: من تاريخ</label><input id="bk_f" type="date" value="${day(Date.now()-6*864e5)}"><label>إلى تاريخ</label><input id="bk_t" type="date" value="${day(Date.now())}">
+  <div class="r"><button id="bkFull" onclick="expFull()">تصدير نسخة كاملة (مع المسارات)</button></div></div>
+  <div class="n"><label>حد السرعة للتنبيه (كم/س)</label><input id="ms" type="number" value="${db.maxSpeed||120}" onchange="db.maxSpeed=+this.value;save()"></div>
+  <div class="n"><b>تسجيل الزيارات تلقائيًا</b>
+  <p class="mut">لما المتتبع (على هاتفه وهو فاتح صفحة التتبع) يدخل نطاق شركة من خطة اليوم ويفضل فيه المدة المحددة، الزيارة تتسجل «تمت» لوحدها بوقت الوصول. المدة بتمنع تسجيل شركة المتتبع بس عدّى من جنبها.</p>
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" style="width:auto" ${db.visitAuto!==false?'checked':''} onchange="db.visitAuto=this.checked;save()"> تفعيل التسجيل التلقائي</label>
+  <label>نطاق الشركة (متر) — بين 30 و1000</label><input type="number" min="30" max="1000" value="${visitCfg().rad}" onchange="db.visitRadius=Math.min(1000,Math.max(30,+this.value||200));save()">
+  <label>مدة البقاء قبل التسجيل (ثانية) — 0 يعني بمجرد الدخول</label><input type="number" min="0" max="3600" value="${visitCfg().dwell/1000}" onchange="db.visitDwell=Math.min(3600,Math.max(0,+this.value||0));save()"></div>
+  <div class="n"><b>تصفير بيانات محددة</b><p class="mut">يتم تنزيل نسخة احتياطية تلقائيًا قبل التنفيذ. المستخدمون لا يتأثرون.</p>
+  ${[['vehicles','كل المركبات'],['drivers','كل السائقين'],['devices','كل الأجهزة'],['positions','المواقع الحالية للأجهزة']].map(x=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="rs_${x[0]}" style="width:auto"> ${x[1]}</label>`).join('')}
+  <label>مسارات المتتبعين</label><select id="rt_u"><option value="">— لا شيء —</option><option value="all">كل المتتبعين</option>${db.users.filter(u=>u.role==='tracker').map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+  <label>من تاريخ (اختياري)</label><input id="rt_f" type="date"><label>إلى تاريخ (اختياري)</label><input id="rt_t" type="date">
+  <div class="r"><button class="d" onclick="resetSel()">تنفيذ التصفير</button></div></div>
+  <div class="n mut">لإرسال موقع جهاز خارجي: اكتب في المسار <code>positions/معرّف_الجهاز</code> بالصيغة <code>{ "lat": 30.04, "lng": 31.23, "speed_mps": 0, "battery": 80, "t": 1790000000000 }</code> (مثلًا عبر REST: PUT إلى <code>${FB_CFG.databaseURL}/positions/ID.json</code>).</div>`;
+}
+async function initFB(){
+  if(!fb){connectionMessage='تعذّر تحميل مكتبة Firebase. تأكد من الإنترنت ثم أعد المحاولة.';dbReady=false;render();return}
+  try{
+    const rm=await fetchRemote();
+    db=rm?Object.assign(normalizeDB(rm),{positions:{}}):empty();
+    // تأكيد حساب بيتر سيدهم كمدير عام بالحساب وكلمة المرور اللذين طلبهما المستخدم.
+    const email='psaidhome@af-f.com', salt='aff-initial-admin-v1-r4nd0m-SALT';
+    const hashValue='cf119d28c15e8bc3051d74888f12863ce72e7e89b341788e0f216c3bb33635f9';
+    let admin=db.users.find(u=>(u.email||'').toLowerCase()===email), changed=false;
+    if(!admin){admin={id:uid(),name:'بيتر سيدهم',email,salt,hash:hashValue,role:'super_admin'};db.users.push(admin);changed=true}
+    else if(admin.name!=='بيتر سيدهم'||admin.role!=='super_admin'||admin.salt!==salt||admin.hash!==hashValue){Object.assign(admin,{name:'بيتر سيدهم',email,salt,hash:hashValue,role:'super_admin'});changed=true}
+    if(!rm||changed)await save();else LS.aff_db=JSON.stringify(db);
+    dbReady=true;connectionMessage='';startBaseSync();
+    if(me&&me.role!=='tracker')startLiveSync();
+  }catch(e){dbReady=false;connectionMessage='فشل الاتصال بقاعدة البيانات: '+e.message+' — تأكد من قواعد الأمان (Rules) في Firebase.'}
+  render();
+}
+function dl(text,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+function exp(){dl(JSON.stringify(db,null,1),'aff-db-'+day(Date.now())+'.json')}
+async function expFull(){
+  if(!fb)return toast('قاعدة البيانات غير متصلة');
+  const f=$('#bk_f').value,t=$('#bk_t').value;
+  if(!f||!t||f>t)return toast('اختر فترة صحيحة (من ≤ إلى)');
+  if((new Date(t)-new Date(f))/864e5>92)return toast('الحد الأقصى للنسخة الواحدة 93 يومًا');
+  const btn=$('#bkFull'),old=btn.textContent;btn.disabled=true;
+  try{
+    const tracks={},trs=db.users.filter(u=>u.role==='tracker');let n=0;
+    for(let i=0;i<trs.length;i++){
+      btn.textContent=`جاري تحميل المسارات… ${i+1}/${trs.length}`;
+      const sn=await R('tracks/'+trs[i].id).orderByKey().startAt(f).endAt(t).get();
+      if(sn.exists()){tracks[trs[i].id]=sn.val();n+=Object.keys(sn.val()).length}
+    }
+    dl(JSON.stringify({format:'aff-full-backup',version:1,exportedAt:new Date().toISOString(),range:{from:f,to:t},db:{...db,positions:{}},tracks}),`aff-full-backup-${f}_${t}.json`);
+    toast(`تم تصدير النسخة الكاملة (${n} يوم مسار)`);
+  }catch(e){toast('فشل التصدير: '+e.message)}
+  finally{btn.disabled=false;btn.textContent=old}
+}
+async function imp(f){
+  if(!f)return;const inp=$('#imp');
+  let o;try{o=JSON.parse(await f.text())}catch(e){if(inp)inp.value='';return toast('ملف غير صالح')}
+  const full=!!(o&&o.format==='aff-full-backup'),d=full?o.db:o;
+  if(!d||typeof d!=='object'||!Array.isArray(d.users)||!d.users.length){if(inp)inp.value='';return toast('الملف لا يبدو نسخة احتياطية صحيحة (لا يحتوي على مستخدمين)')}
+  const cn=x=>Array.isArray(x)?x.length:0,nd=Object.values((full&&o.tracks)||{}).reduce((a,v)=>a+Object.keys(v||{}).length,0);
+  if(!confirm(`استرجاع هذه النسخة سيستبدل البيانات الحالية بالكامل.\n\nمحتوى النسخة: ${cn(d.users)} مستخدم، ${cn(d.vehicles)} مركبة، ${cn(d.drivers)} سائق، ${cn(d.companies)} شركة، ${cn(d.dailyPlans)} خطة`+(full?`، و${nd} يوم مسار`:'')+`\n\nسيتم تنزيل نسخة من البيانات الحالية تلقائيًا قبل الاستبدال. متابعة؟`)){if(inp)inp.value='';return}
+  exp();
+  try{
+    db=normalizeDB(d);await save();
+    if(full&&fb&&o.tracks){let k=0;for(const u of Object.keys(o.tracks))for(const [dy,v] of Object.entries(o.tracks[u]||{})){await R(`tracks/${u}/${dy}`).set(v);k++;toast(`استرجاع المسارات… ${k}/${nd}`)}}
+    toast('تم الاسترجاع');
+  }catch(e){toast('فشل الاسترجاع: '+e.message)}
+  if(inp)inp.value='';render();
+}
+
+// ---------- الدخول ----------
+let authMode='login', dbReady=false, connectionMessage='';
+function connectionPage(){
+  return `<div class="c lg"><div class="lg-title">AFF Fleet Tracker</div>
+  <p class="mut">${esc(connectionMessage||'جاري الاتصال بقاعدة البيانات…')}</p>
+  <button class="p" style="width:100%" onclick="connectionMessage='';render();initFB()">إعادة المحاولة</button></div>`;
+}
+function login(){
+  const registering=authMode==='register';
+  return `<form class="c lg" onsubmit="auth(event)"><div class="lg-title">AFF Fleet Tracker</div>
+  ${registering?'<h2>إنشاء حساب جديد</h2>':'<h2>تسجيل الدخول</h2>'}
+  ${registering?'<label>الاسم</label><input name="name" required autocomplete="name">':''}
+  <label>البريد الإلكتروني</label><input name="email" type="email" required autocomplete="username">
+  <label>كلمة المرور</label><input name="pw" type="password" minlength="8" required autocomplete="${registering?'new-password':'current-password'}">
+  <button class="p" style="width:100%" type="submit">${registering?'إنشاء الحساب':'تسجيل الدخول'}</button>
+  <p class="mut">${registering?'لديك حساب بالفعل؟':'ليس لديك حساب؟'} <a href="#" onclick="event.preventDefault();authMode='${registering?'login':'register'}';render()">${registering?'تسجيل الدخول':'إنشاء حساب جديد'}</a></p>
+  ${registering?'<p class="mut">الحسابات الجديدة تحصل على صلاحية متتبع، ولا تحصل على صلاحية المدير العام تلقائيًا.</p>':''}</form>`;
+}
+async function auth(ev){
+  ev.preventDefault();if(!dbReady)return toast('قاعدة البيانات غير متصلة بعد');
+  const f=Object.fromEntries(new FormData(ev.target)),email=f.email.trim().toLowerCase();
+  try{
+    const rm=await fetchRemote();if(rm)applyRemote(rm);
+    if(authMode==='register'){
+      if(db.users.some(u=>(u.email||'').toLowerCase()===email))return toast('هذا البريد الإلكتروني مسجل بالفعل');
+      const salt=uid()+uid(),nu={id:uid(),name:f.name.trim(),email,salt,hash:await hash(f.pw,salt),role:'tracker'};
+      db.users.push(nu);await save();me={email,name:nu.name,role:nu.role,id:nu.id};
+    }else{
+      const u=db.users.find(u=>(u.email||'').toLowerCase()===email);
+      if(!u||u.hash!==await hash(f.pw,u.salt))return toast('بيانات الدخول غير صحيحة');
+      me={email,name:u.name,role:u.role,id:u.id};
+    }
+  }catch(e){return toast('خطأ في الاتصال أو المصادقة: '+e.message)}
+  sessionStorage.aff_me=JSON.stringify(me);manualStop=false;if(me.role!=='tracker')startLiveSync();page=homePage();render();
+}
+async function logout(){await stopTrack();stopLiveSync();unwatchVisits();me=null;delete sessionStorage.aff_me;render()}
+
+// ---------- المستخدمون ----------
+const isAdmin=()=>me&&['super_admin','admin'].includes(me.role);
+const RN={super_admin:'مدير عام (Super Admin)',manager:'مدير (Manager)',viewer:'مشاهد (Viewer)',tracker:'متتبع (موبايل)'};
+const homePage=()=>me.role==='tracker'?'track':me.role==='viewer'?'map':'dash';
+const allowed=k=>me.role==='tracker'?k==='track':me.role==='viewer'?(k==='map'||k==='rep'):(k!=='track'&&(isAdmin()||(k!=='settings'&&k!=='users'&&k!=='dbset')));
+function users(){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2>المستخدمون</h2><button class="p" onclick="userForm()">+ إضافة مستخدم</button></div>
+  <div class="w"><table><tr><th>الافتار</th><th>الاسم</th><th>البريد</th><th>الصلاحية</th><th></th></tr>
+  ${db.users.map(u=>`<tr><td>${u.role==='tracker'?truckAvatar(u):'—'}</td><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${RN[u.role]||esc(u.role)}</td><td>${u.role==='tracker'?`<button class="truck-button" onclick="truckForm('${u.id}')">اختيار الشاحنة</button> `:''}<button onclick="pwForm('${u.id}')">كلمة المرور</button> <button class="d" onclick="delUser('${u.id}')">حذف</button></td></tr>`).join('')}</table></div>
+  <p class="mut">المدير العام: كل الصلاحيات. المدير: يشاهد ويضيف ويعدّل المركبات والسائقين والأجهزة، بدون حذف أو إعدادات أو مستخدمين. المشاهد: يرى الخريطة المباشرة وخط السير والتقارير فقط (بدون أي إضافة أو تعديل أو حذف). المتتبع: يستخدم الموبايل فقط، ويُسجَّل موقعه ومساره تلقائيًا بعد الدخول.</p>`;
+}
+function userForm(){
+  const m=document.createElement('div');m.className='m';
+  m.innerHTML=`<form><h3>مستخدم جديد</h3><label>الاسم</label><input name="name" required><label>البريد الإلكتروني</label><input name="email" type="email" required>
+  <label>كلمة المرور (8 أحرف على الأقل)</label><input name="pw" type="password" minlength="8" required>
+  <label>الصلاحية</label><select name="role"><option value="manager">مدير (Manager)</option><option value="viewer">مشاهد (Viewer) — الخريطة والتقارير فقط</option><option value="tracker">متتبع (موبايل)</option><option value="super_admin">مدير عام (Super Admin)</option></select>
+  ${truckPicker('newUser',{avatarType:'box',avatarColor:'#00c8ff'})}
+  <div class="r"><button class="p">حفظ</button><button type="button" onclick="this.closest('.m').remove()">إلغاء</button></div></form>`;
+  m.querySelector('form').onsubmit=async ev=>{ev.preventDefault();const f=Object.fromEntries(new FormData(ev.target)),email=f.email.trim().toLowerCase();
+    if(db.users.some(u=>u.email===email))return toast('البريد مستخدم بالفعل');
+    const salt=uid()+uid();db.users.push({id:uid(),name:f.name.trim(),email,salt,hash:await hash(f.pw,salt),role:f.role,avatarType:f.avatarType||'box',avatarColor:f.avatarColor||'#00c8ff'});m.remove();await save();render()};
+  document.body.appendChild(m);
+}
+function truckForm(id){
+  const u=db.users.find(x=>x.id===id);if(!u||u.role!=='tracker')return;
+  const m=document.createElement('div');m.className='m';
+  m.innerHTML=`<form><h3>افتار هاتف السائق: ${esc(u.name)}</h3><p class="mut">اختر الشاحنة التي ستظهر على الخريطة عند تتبع موقع هذا الهاتف.</p>${truckPicker('trackerAvatar',u)}<div class="r"><button class="p">حفظ الاختيار</button><button type="button" onclick="this.closest('.m').remove()">إلغاء</button></div></form>`;
+  m.querySelector('form').onsubmit=async ev=>{ev.preventDefault();const f=Object.fromEntries(new FormData(ev.target));u.avatarType=f.avatarType||'box';u.avatarColor=f.avatarColor||'#00c8ff';m.remove();await save();render();toast('تم حفظ افتار هاتف السائق')};
+  document.body.appendChild(m);
+}
+async function pwForm(id){const u=db.users.find(x=>x.id===id),p=prompt('كلمة مرور جديدة لـ '+u.name+' (8 أحرف على الأقل)');
+  if(!p)return;if(p.length<8)return toast('كلمة المرور قصيرة');u.salt=uid()+uid();u.hash=await hash(p,u.salt);await save();toast('تم تغيير كلمة المرور')}
+async function delUser(id){const u=db.users.find(x=>x.id===id);
+  if(u.email===me.email)return toast('لا يمكنك حذف حسابك');
+  if(db.users.filter(x=>x.role==='super_admin').length<2&&u.role==='super_admin')return toast('لازم يبقى مدير عام واحد على الأقل');
+  if(!confirm('حذف '+u.name+'؟'))return;db.users=db.users.filter(x=>x.id!==id);await save();render()}
+
+// ---------- التتبع (موبايل) ----------
+const day=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function trackPage(){
+  const plans=activePlansForUser(me?.id),allCompanies=[...new Set(plans.flatMap(p=>p.companyIds||[]))].map(id=>companyById(id)).filter(Boolean);
+  return `<h2>تتبّع موقعي</h2><div class="n" id="tst"></div><div class="r"><button class="p" onclick="manualStop=false;startTrack()">بدء</button><button onclick="manualStop=true;stopTrack()">إيقاف</button></div>
+  <p class="mut">للتسجيل المستمر: وصّل الهاتف بالشاحن، واترك هذه الصفحة مفتوحة وفي الواجهة. الشاشة هتفضل شغالة تلقائيًا (قلّل السطوع لو حبيت). لو اتقفلت الشاشة أو فتحت تطبيق تاني، التسجيل بيقف لأن المتصفح لا يسمح بالتتبع في الخلفية.</p>
+  ${plans.length?`<div class="n"><h3>شركات مطلوب زيارتها اليوم (${day(Date.now())})</h3><p class="mut">لا يوجد ترتيب إجباري. اختر بنفسك أي شركة تبدأ بها، ثم سجّل إتمام كل زيارة. تأكد من بيانات الوصول قبل الانطلاق.</p>
+    ${plans.map(plan=>`<div style="margin-top:12px"><b>الخطة: ${esc(plan.date)}</b>${(plan.companyIds||[]).map(id=>{const c=companyById(id);if(!c)return '';const done=isDone(plan,id),rec=visitRec(plan.date,plan.userId,id),man=(plan.completedIds||[]).includes(id);return `<div class="visit-row ${done?'visit-done':''}"><input type="checkbox" ${done?'checked':''} onchange="togglePlanStop('${plan.id}','${id}')"><div style="flex:1;min-width:0"><strong>🏢 ${esc(c.name)}</strong><div class="mut">${esc(c.address||'العنوان غير مسجل')}</div><small class="mut">${Number(c.lat).toFixed(6)}, ${Number(c.lng).toFixed(6)}</small><div><a href="${companyLocationLink(c)}" target="_blank" rel="noopener noreferrer">فتح موقع الشركة على الخريطة</a></div></div><span class="t" style="background:${done?'#16864a':'#53657a'}">${done?(rec&&!man?'تمت تلقائيًا '+tmS(rec.t):'تمت الزيارة'):'مطلوبة'}</span></div>`}).join('')}</div>`).join('')}
+  </div>`:`<div class="n"><b>لا توجد زيارات معيّنة لحسابك اليوم.</b><p class="mut">ستظهر هنا أسماء الشركات التي يعيّنها المدير لحساب هاتفك في تاريخ اليوم.</p></div>`}
+  ${allCompanies.length?`<h3>خريطة شركات اليوم</h3><p class="mut">النقاط المعروضة هي وجهات اليوم المحفوظة، وأسماؤها ظاهرة على الخريطة.</p><div id="driverRouteMap" class="driver-map"></div>`:''}`;
+}
+function upd(){const e=$('#tst');if(!e)return;e.innerHTML=`الحالة: <b>${wid!=null?'يعمل':'متوقف'}</b><br>دقة الموقع: ${tinfo.acc??'—'} م<br>نقاط بانتظار الإرسال: ${buf.length}<br>تم إرسال: ${tinfo.sent}<br>آخر مزامنة: ${tinfo.sync?new Date(tinfo.sync).toLocaleTimeString(LOCALE):'—'}<br>منع انطفاء الشاشة: ${wl?'مفعّل ✅':'غير مفعّل ⚠️'}${tinfo.err?`<br><span style="color:var(--er)">خطأ: ${esc(tinfo.err)}</span>`:''}`}
+let lastLive=0;
+async function acquireWL(){try{if(wid!=null&&navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null;upd()});upd()}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!me||me.role!=='tracker')return;if(document.visibilityState==='visible')acquireWL();flush()});
+window.addEventListener('pagehide',()=>{try{flush()}catch(e){}});
+function sendLive(pt){
+  R('live/'+me.id).set(pt).then(()=>{tinfo.sync=Date.now();tinfo.err=null;upd()}).catch(e=>{tinfo.err=e.message;upd()});
+}
+function startTrack(){
+  if(wid!=null)return;if(!navigator.geolocation)return toast('المتصفح لا يدعم تحديد الموقع');if(!fb||!me)return toast('قاعدة البيانات غير متصلة');
+  wid=navigator.geolocation.watchPosition(p=>{
+    tinfo.acc=Math.round(p.coords.accuracy);
+    const t=p.timestamp,pt={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),a:tinfo.acc,s:p.coords.speed==null?null:+p.coords.speed.toFixed(1),t};
+    trackerCurrentPoint={lat:pt.lat,lng:pt.lng,t};
+    try{autoVisit(pt)}catch(e){}
+    if(t-lastLive>=3000){lastLive=t;sendLive(pt)}
+    if(t-lastPt>=10000){lastPt=t;buf.push(pt);LS.aff_buf=JSON.stringify(buf)}
+    upd();if(page==='track')drawDriverRouteMap()},
+    e=>{tinfo.err=e.message;upd()},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+  acquireWL();
+  tick=setInterval(flush,15000);upd();
+}
+async function stopTrack(){
+  if(wid!=null){navigator.geolocation.clearWatch(wid);wid=null}clearInterval(tick);try{await wl?.release()}catch(e){}wl=null;await flush();upd();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&wid!=null)navigator.wakeLock?.request('screen').then(l=>wl=l).catch(()=>{})});
+async function flush(){
+  if(!fb||!me||!buf.length||flushing)return;flushing=true;const send=buf.slice();
+  try{
+    const up={};send.forEach(x=>{up[`tracks/${me.id}/${day(x.t)}/${x.t}`]={lat:x.lat,lng:x.lng,a:x.a??null,s:x.s??null,t:x.t}});
+    await Promise.race([R().update(up),new Promise((_,j)=>setTimeout(()=>j(Error('انتهت المهلة')),20000))]);
+    buf=buf.slice(send.length);LS.aff_buf=JSON.stringify(buf);tinfo.sent+=send.length;tinfo.sync=Date.now();tinfo.err=null;
+  }catch(e){tinfo.err=e.message}
+  flushing=false;upd();
+}
+async function pullLive(){}
+
+// ---------- تقارير المسار ----------
+let rm,rpts=[];
+const hav=(a,b)=>{const R=6371000,r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dg=r(b.lng-a.lng),q=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(q))};
+const GAP_MS=15*60*1000; /* انقطاع الإشارة: فجوة أكبر من 15 دقيقة بين نقطتين */
+function analyze(p){
+  let dist=0,max=0,stops=[],i=0;
+  for(let k=1;k<p.length;k++){const d=hav(p[k-1],p[k]);if(d>15)dist+=d}
+  p.forEach(x=>{if(x.s!=null&&x.s>max)max=x.s});
+  while(i<p.length){let j=i;while(j+1<p.length&&hav(p[i],p[j+1])<50)j++;if(p[j].t-p[i].t>=300000)stops.push({a:p[i],b:p[j]});i=j+1}
+  /* زمن الحركة/التوقف/بدون إشارة: كل فترة بين نقطتين متتاليتين تُصنَّف حسب السرعة الفعلية */
+  let mov=0,stp=0,gap=0,movd=0;
+  for(let k=1;k<p.length;k++){const dt=p[k].t-p[k-1].t;if(dt<=0)continue;if(dt>GAP_MS){gap+=dt;continue}const d=hav(p[k-1],p[k]);if(d>15&&d/(dt/1000)>=1){mov+=dt;movd+=d}else stp+=dt}
+  return{dist,max,stops,mov,stp,gap,movd};
+}
+const fm=ms=>{const m=Math.round(ms/60000);return m>=60?Math.floor(m/60)+' س '+m%60+' د':m+' د'};
+function repPage(){
+  const tr=db.users.filter(u=>u.role==='tracker');
+  return `<h2>تقارير المتتبعين</h2><div class="n"><label>المستخدم</label><select id="ru">${tr.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+  <label>التاريخ</label><input id="rd" type="date" value="${day(Date.now())}"><div class="r"><button class="p" onclick="showRep()">عرض التقرير</button><button id="csvBtn" onclick="csv()">تصدير CSV</button><button id="xlsBtn" onclick="xlsxRep()">تصدير Excel</button><button id="pdfBtn" onclick="pdfRep()">تصدير PDF</button></div></div><div id="rout"></div>${sumBlock()}${visBlock()}`;
+}
+async function showRep(){
+  const u=$('#ru').value,d=$('#rd').value,o=$('#rout');
+  if(!u)return toast('أضف مستخدمًا من نوع متتبع أولاً');if(!fb)return toast('قاعدة البيانات غير متصلة');
+  o.innerHTML='<p class="mut">جاري التحميل...</p>';
+  let snap;try{snap=await R(`tracks/${u}/${d}`).get()}catch(e){o.innerHTML='<p class="mut">تعذّر الاتصال بقاعدة البيانات</p>';return}
+  if(!snap.exists()){rpts=[];o.innerHTML='<p class="mut">لا توجد بيانات لهذا اليوم</p>';return}
+  rpts=Object.values(snap.val()).filter(x=>x&&x.t).map(x=>({lat:x.lat,lng:x.lng,a:x.a,s:x.s==null?null:x.s,t:x.t})).sort((a,b)=>a.t-b.t);
+  if(!rpts.length){o.innerHTML='<p class="mut">لا توجد بيانات لهذا اليوم</p>';return}
+  stopReplay();fsReset();if(rm){rm.remove();rm=null}
+  const a=analyze(rpts),f=rpts[0],l=rpts[rpts.length-1],tm=x=>new Date(x).toLocaleTimeString(LOCALE,{hour:'2-digit',minute:'2-digit'}),
+    ln=p=>gmLink(p.lat,p.lng);
+  o.innerHTML=`<div class="g">${[['المسافة',(a.dist/1000).toFixed(1)+' كم'],['البداية',tm(f.t)],['النهاية',tm(l.t)],['المدة',fm(l.t-f.t)],['أقصى سرعة',Math.round(a.max*3.6)+' كم/س'],['النقاط',rpts.length],['زمن الحركة',fm(a.mov)],['زمن التوقف',fm(a.stp)],['متوسط سرعة الحركة',avgKmh(a)+' كم/س']].concat(a.gap>=300000?[['بدون إشارة',fm(a.gap)]]:[]).map(x=>`<div class="c"><h3 style="font-size:18px">${x[1]}</h3><span>${x[0]}</span></div>`).join('')}</div>
+  <div id="rmap" style="height:50vh;border-radius:12px;border:1px solid var(--br)"></div>
+  <div class="n" id="rpl" style="margin-top:10px"><div class="rpl"><button class="p" id="rplBtn" onclick="rplToggle()">▶ تشغيل الرحلة</button>
+  <select id="rplSp" onchange="rplSpeed(this.value)"><option value="60">×60 — كل ثانية = دقيقة</option><option value="300" selected>×300 — كل ثانية = 5 دقائق</option><option value="900">×900 — كل ثانية = 15 دقيقة</option><option value="1800">×1800 — كل ثانية = نصف ساعة</option></select>
+  <input type="range" id="rplSl" min="0" max="1000" value="0" oninput="rplSeek(this.value)"></div>
+  <div class="rpl-info" id="rplInfo">—</div></div>
+  <h3>التوقفات (5 دقائق فأكثر)</h3><div class="w"><table><tr><th>من</th><th>إلى</th><th>المدة</th><th>المنطقة / الشارع</th><th>الموقع</th></tr>
+  ${a.stops.map(s=>`<tr><td>${tm(s.a.t)}</td><td>${tm(s.b.t)}</td><td>${fm(s.b.t-s.a.t)}</td><td data-ad="${s.a.lat},${s.a.lng}" data-fmt="stack" style="white-space:normal;min-width:220px">…</td><td><a href="${ln(s.a)}" target="_blank" rel="noopener">خريطة</a></td></tr>`).join('')||'<tr><td colspan="5" class="mut">لا توجد توقفات</td></tr>'}</table></div>
+  <p class="mut">البداية: <span data-ad="${f.lat},${f.lng}" data-fmt="line">…</span> (<a href="${ln(f)}" target="_blank" rel="noopener">خريطة</a>)<br>آخر نقطة: <span data-ad="${l.lat},${l.lng}" data-fmt="line">…</span> (<a href="${ln(l)}" target="_blank" rel="noopener">خريطة</a>)<br><a href="${gmDirLink(rpts)}" target="_blank" rel="noopener">افتح المسار كاملًا في Google Maps</a></p>`;
+  if(!window.L){fillAddr();return}rm=L.map('rmap');addFS(rm);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'}).addTo(rm);
+  const ll=rpts.map(p=>[p.lat,p.lng]);L.polyline(ll,{weight:4,color:'#1f6feb'}).addTo(rm);
+  L.circleMarker(ll[0],{radius:8,color:'#fff',fillColor:'#1a9d55',fillOpacity:1}).addTo(rm).bindPopup('البداية '+tm(f.t)+'<br><span class="pa2">…</span>').on('popupopen',e=>popAddr(e,f));
+  L.circleMarker(ll[ll.length-1],{radius:8,color:'#fff',fillColor:'#d93b3b',fillOpacity:1}).addTo(rm).bindPopup('النهاية '+tm(l.t)+'<br><span class="pa2">…</span>').on('popupopen',e=>popAddr(e,l));
+  a.stops.forEach(s=>L.circleMarker([s.a.lat,s.a.lng],{radius:7,color:'#fff',fillColor:'#d98a00',fillOpacity:1}).addTo(rm).bindPopup('توقف '+fm(s.b.t-s.a.t)+'<br><span class="pa2">…</span>').on('popupopen',e=>popAddr(e,s.a)));
+  rm.fitBounds(ll,{padding:[30,30],maxZoom:17});initReplay();
+  fillAddr();
+}
+async function popAddr(e,p){const x=e.popup.getElement()?.querySelector('.pa2');if(!x)return;try{x.textContent='🛣️ '+fmtAddr(await addr(p.lat,p.lng),'road')}catch(err){x.textContent='تعذّر جلب العنوان'}}
+let csvBusy=false;
+const csvq=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+/* نطاق الشركة بالمتر: قابل للتعديل من الإعدادات (الافتراضي 200). أي نقطة داخل هذه الدائرة تُحسب "داخل الشركة" */
+function nearCompany(p){
+  const rad=cRad();let best=null,bd=Infinity;
+  (db.companies||[]).forEach(c=>{const la=Number(c.lat),lo=Number(c.lng);if(c.lat===''||c.lng===''||!Number.isFinite(la)||!Number.isFinite(lo))return;if(Math.abs(p.lat-la)>0.03||Math.abs(p.lng-lo)>0.03)return;const d=hav(p,{lat:la,lng:lo});if(d<bd){bd=d;best=c}});
+  return bd<=rad?best:null;
+}
+/* يجهّز أسطر التقرير: كل توقف (نقاط متقاربة أقل من 50م) سطر واحد فيه وقت الانتظار + اسم المنطقة أو الشركة */
+async function buildRows(prog){
+  const wt=ms=>new Promise(r=>setTimeout(r,ms)),rows=[],inCo=rpts.map(nearCompany);let i=0;
+  while(i<rpts.length){
+    let j=i;
+    if(inCo[i]){while(j+1<rpts.length&&inCo[j+1]&&inCo[j+1].id===inCo[i].id)j++}
+    else{while(j+1<rpts.length&&!inCo[j+1]&&hav(rpts[i],rpts[j+1])<50)j++}
+    const sp=rpts.slice(i,j+1).filter(x=>x.s!=null).map(x=>x.s);
+    rows.push({p:rpts[i],wait:rpts[j].t-rpts[i].t,spd:sp.length?Math.round(sp.reduce((a,b)=>a+b,0)/sp.length*3.6):'',c:inCo[i]});
+    i=j+1;
+  }
+  const anchors=[];
+  for(let k=0;k<rows.length;k++){
+    const r=rows[k];prog&&prog(k+1,rows.length);
+    if(r.c){r.place='داخل نطاق: '+r.c.name;r.co=true;continue}
+    const rad=r.wait>=60000?40:250,an=anchors.find(x=>hav(x.p,r.p)<rad);
+    if(an){r.place=an.name;continue}
+    const cached=!!AC[ak(r.p.lat,r.p.lng)];let name='';
+    for(let t=0;t<2&&!name;t++){try{name=fmtAddr(await addr(r.p.lat,r.p.lng),'road')}catch(e){await wt(3000)}}
+    name=name||'تعذّر تحديد المنطقة';
+    anchors.push({p:r.p,name});r.place=name;
+    if(!cached)await wt(1100);
+  }
+  return rows;
+}
+async function csv(){
+  if(!rpts.length)return toast('اعرض تقريرًا أولاً');
+  if(csvBusy)return;csvBusy=true;
+  const btn=$('#csvBtn'),old=btn?.textContent,p2=n=>String(n).padStart(2,'0');if(btn)btn.disabled=true;
+  try{
+    const rows=await buildRows((k,n)=>{if(btn)btn.textContent=`جاري تجهيز أسماء المناطق… ${k}/${n}`});
+    const head=['اليوم','الوقت','وقت الانتظار (دقيقة)','المنطقة / النقطة','السرعة (كم/س)'];
+    const lines=rows.map(r=>{const d=new Date(r.p.t);
+      return [day(r.p.t),`${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`,Math.round(r.wait/60000),r.place,r.spd].map(csvq).join(',')});
+    const s='\ufeff'+head.map(csvq).join(',')+'\r\n'+lines.join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download='track-'+($('#rd')?.value||'')+'.csv';a.click();
+  }finally{csvBusy=false;if(btn){btn.disabled=false;btn.textContent=old||'تصدير CSV'}}
+}
+/* تقرير PDF: صفحة طباعة منسّقة تُحفظ PDF من نافذة الطباعة (تدعم العربية بشكل كامل) */
+function reportHTML(rows,m){
+  const p2=n=>String(n).padStart(2,'0'),tm=t=>{const d=new Date(t);return p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds())};
+  const cards=[['المسافة',m.dist],['البداية',m.start],['النهاية',m.end],['المدة',m.dur],['أقصى سرعة',m.max],['عدد السطور',rows.length],['زمن الحركة',m.mov||'—'],['زمن التوقف',m.stp||'—']]
+    .map(x=>`<div class="k"><b>${esc(String(x[1]))}</b><span>${x[0]}</span></div>`).join('');
+  const body=rows.map((r,i)=>`<tr${r.co?' class="co"':''}><td>${i+1}</td><td>${day(r.p.t)}</td><td>${tm(r.p.t)}</td><td>${r.wait>=30000?fm(r.wait):'—'}</td><td class="pl">${r.co?'🏢 ':''}${esc(r.place||'')}</td><td>${r.spd===''?'—':r.spd}</td></tr>`).join('');
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير ${esc(m.name)} - ${esc(m.date)}</title><style>
+@page{size:A4;margin:14mm 12mm}*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,"Segoe UI","Noto Naskh Arabic",Arial,sans-serif;color:#13233a;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hd{background:linear-gradient(100deg,#0b3a5e,#0a7fa8);color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.hd h1{margin:0;font-size:21px}.hd small{opacity:.85;font-size:12px}.hd .r{text-align:left;font-size:13px;line-height:1.7}
+.ks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.k{border:1px solid #cfdcea;border-radius:10px;padding:8px;text-align:center;background:#f5f9fd}.k b{display:block;font-size:14px;color:#0b3a5e}.k span{font-size:11px;color:#5b7088}
+h2{font-size:14px;margin:14px 0 6px;color:#0b3a5e}
+table{width:100%;border-collapse:collapse}thead{display:table-header-group}tr{page-break-inside:avoid}
+th{background:#0b3a5e;color:#fff;padding:7px 8px;font-size:11.5px;text-align:center}
+td{padding:6px 8px;border-bottom:1px solid #e1e9f1;text-align:center}td.pl{text-align:start;width:42%}
+tbody tr:nth-child(even){background:#f6f9fc}tr.co td{background:#e6f6ec;font-weight:700}
+.ft{margin-top:12px;color:#6a7d92;font-size:10.5px;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="hd"><div><h1>تقرير تتبع المسار</h1><small>Cyber Track</small></div><div class="r"><b>${esc(m.name)}</b><br>التاريخ: ${esc(m.date)}</div></div>
+<div class="ks">${cards}</div>
+<h2>سجل التواجد والتوقفات</h2>
+<table><thead><tr><th>#</th><th>اليوم</th><th>الوقت</th><th>وقت الانتظار</th><th>المنطقة / النقطة</th><th>السرعة (كم/س)</th></tr></thead><tbody>${body}</tbody></table>
+<div class="ft"><span>🏢 الصفوف الخضراء = داخل نطاق شركة / نقطة محفوظة (200 متر)</span><span>صدر في ${esc(new Date().toLocaleString(LOCALE))}</span></div>
+</body></html>`;
+}
+async function pdfRep(){
+  if(!rpts.length)return toast('اعرض تقريرًا أولاً');
+  if(csvBusy)return;
+  const w=window.open('','_blank');if(!w)return toast('اسمح للنوافذ المنبثقة (Pop-ups) ثم أعد المحاولة');
+  const msg=t=>{try{w.document.open();w.document.write(`<meta charset="utf-8"><body dir="rtl" style="font-family:Tahoma,Arial;padding:40px;color:#13233a">${t}</body>`);w.document.close()}catch(e){}};
+  msg('جاري تجهيز التقرير…');csvBusy=true;
+  const btn=$('#pdfBtn'),old=btn?.textContent;if(btn)btn.disabled=true;
+  try{
+    const rows=await buildRows((k,n)=>{if(btn)btn.textContent=`جاري التجهيز… ${k}/${n}`;msg(`جاري تجهيز أسماء المناطق… ${k} / ${n}`)});
+    const a=analyze(rpts),f=rpts[0],l=rpts[rpts.length-1],tmh=x=>new Date(x).toLocaleTimeString(LOCALE,{hour:'2-digit',minute:'2-digit'});
+    const html=reportHTML(rows,{name:$('#ru')?.selectedOptions?.[0]?.textContent||'',date:$('#rd')?.value||'',dist:(a.dist/1000).toFixed(1)+' كم',start:tmh(f.t),end:tmh(l.t),dur:fm(l.t-f.t),max:Math.round(a.max*3.6)+' كم/س',mov:fm(a.mov),stp:fm(a.stp)});
+    w.document.open();w.document.write(html);w.document.close();
+    setTimeout(()=>{try{w.focus();w.print()}catch(e){}},700);
+  }catch(e){try{w.close()}catch(x){}toast('تعذّر تجهيز التقرير')}
+  finally{csvBusy=false;if(btn){btn.disabled=false;btn.textContent=old||'تصدير PDF'}}
+}
+
+// ---------- إعادة تشغيل الرحلة (Replay) ----------
+const avgKmh=a=>a.mov>0?Math.round(a.movd/(a.mov/1000)*3.6):0;
+let rpl=null;
+function stopReplay(){if(rpl&&rpl.raf)cancelAnimationFrame(rpl.raf);rpl=null}
+function initReplay(){
+  stopReplay();if(!rm||rpts.length<2)return;
+  const u=db.users.find(x=>x.id===$('#ru').value)||{};
+  const mk=L.marker([rpts[0].lat,rpts[0].lng],{icon:L.divIcon({className:'aff-truck-div',html:`<div class="aff-truck-marker">${truckSvg(avatarTypeOf(u),avatarColorOf(u))}</div>`,iconSize:[48,42],iconAnchor:[24,21]}),zIndexOffset:1000}).addTo(rm);
+  const done=L.polyline([],{weight:6,color:'#00e58b',opacity:.95}).addTo(rm);
+  rpl={pts:rpts,t0:rpts[0].t,t1:rpts[rpts.length-1].t,vt:rpts[0].t,speed:+($('#rplSp')?.value||300),playing:false,raf:0,last:0,mk,done,idx:-1,lt:0};
+  rplDraw(true);rplBtn();
+}
+function rplAt(vt){
+  const p=rpl.pts;let lo=0,hi=p.length-1;
+  while(hi-lo>1){const m=(lo+hi)>>1;if(p[m].t<=vt)lo=m;else hi=m}
+  const a=p[lo],b=p[hi],f=b.t>a.t?Math.min(1,Math.max(0,(vt-a.t)/(b.t-a.t))):0;
+  return{i:lo,lat:a.lat+(b.lat-a.lat)*f,lng:a.lng+(b.lng-a.lng)*f,gap:b.t-a.t>GAP_MS}
+}
+function rplDraw(force){
+  if(!rpl)return;const c=rplAt(rpl.vt),now=performance.now();
+  rpl.mk.setLatLng([c.lat,c.lng]);
+  if(force||(c.i!==rpl.idx&&now-rpl.lt>90)){rpl.idx=c.i;rpl.lt=now;const tr=rpl.pts.slice(0,c.i+1).map(x=>[x.lat,x.lng]);tr.push([c.lat,c.lng]);rpl.done.setLatLngs(tr)}
+  if(rm&&!rm.getBounds().contains([c.lat,c.lng]))rm.panTo([c.lat,c.lng],{animate:false});
+  const sl=$('#rplSl');if(sl)sl.value=Math.round((rpl.vt-rpl.t0)/Math.max(1,rpl.t1-rpl.t0)*1000);
+  const inf=$('#rplInfo');if(inf){
+    const sp=rpl.pts[c.i].s,co=nearCompany({lat:c.lat,lng:c.lng});
+    inf.innerHTML=`<b>${new Date(rpl.vt).toLocaleTimeString(LOCALE,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</b> · ${sp==null?'—':Math.round(sp*3.6)+' كم/س'}${co?' · 🏢 داخل نطاق: '+esc(co.name):''}${c.gap?' · <span class="warn">⚠️ لا توجد إشارة في هذه الفترة (تُسرَّع)</span>':''}`;
+  }
+}
+function rplTick(ts){
+  if(!rpl||!rpl.playing)return;
+  if(!document.getElementById('rplSl')){stopReplay();return}
+  if(rpl.last){const dt=Math.min(ts-rpl.last,100),c=rplAt(rpl.vt);rpl.vt+=dt*rpl.speed*(c.gap?20:1)}
+  rpl.last=ts;
+  if(rpl.vt>=rpl.t1){rpl.vt=rpl.t1;rpl.playing=false;rplDraw(true);rplBtn();return}
+  rplDraw();rpl.raf=requestAnimationFrame(rplTick);
+}
+function rplBtn(){const b=$('#rplBtn');if(b&&rpl)b.textContent=rpl.playing?'⏸ إيقاف مؤقت':(rpl.vt>=rpl.t1?'↺ إعادة التشغيل':'▶ تشغيل الرحلة')}
+function rplToggle(){
+  if(!rpl)return;
+  if(rpl.playing){rpl.playing=false;cancelAnimationFrame(rpl.raf);rpl.last=0;rplBtn();rplDraw(true);return}
+  if(rpl.vt>=rpl.t1)rpl.vt=rpl.t0;
+  rpl.playing=true;rpl.last=0;rplBtn();rpl.raf=requestAnimationFrame(rplTick);
+}
+function rplSpeed(v){if(rpl)rpl.speed=+v}
+function rplSeek(v){if(!rpl)return;rpl.vt=rpl.t0+(rpl.t1-rpl.t0)*(+v/1000);rpl.last=0;rplDraw(true);rplBtn()}
+
+// ---------- تصدير Excel (مكتبة SheetJS تُحمَّل عند أول استخدام فقط) ----------
+let xlsxP=null;
+function loadXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return xlsxP||(xlsxP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=res;sc.onerror=()=>{xlsxP=null;rej(Error('تعذّر تحميل مكتبة Excel — تأكد من الإنترنت أو استخدم CSV'))};document.head.appendChild(sc)}));
+}
+function mkSheet(head,rows,widths){const ws=XLSX.utils.aoa_to_sheet([head,...rows]);ws['!cols']=widths.map(w=>({wch:w}));return ws}
+function saveXLSX(wb,name){wb.Workbook=wb.Workbook||{};wb.Workbook.Views=[{RTL:true}];XLSX.writeFile(wb,String(name).replace(/[\\/:*?"<>|]/g,'_'))}
+const tmS=x=>x?new Date(x).toLocaleTimeString(LOCALE,{hour:'2-digit',minute:'2-digit'}):'—';
+const mins=ms=>Math.round(ms/60000);
+async function xlsxRep(){
+  if(!rpts.length)return toast('اعرض تقريرًا أولاً');
+  if(csvBusy)return;csvBusy=true;
+  const btn=$('#xlsBtn'),old=btn?.textContent;if(btn)btn.disabled=true;
+  try{
+    await loadXLSX();
+    const rows=await buildRows((k,n)=>{if(btn)btn.textContent=`جاري تجهيز أسماء المناطق… ${k}/${n}`});
+    const a=analyze(rpts),f=rpts[0],l=rpts[rpts.length-1],name=$('#ru')?.selectedOptions?.[0]?.textContent||'',date=$('#rd')?.value||'',p2=n=>String(n).padStart(2,'0');
+    const sum=[['المتتبع',name],['التاريخ',date],['المسافة (كم)',+(a.dist/1000).toFixed(1)],['البداية',tmS(f.t)],['النهاية',tmS(l.t)],['المدة (دقيقة)',mins(l.t-f.t)],['زمن الحركة (دقيقة)',mins(a.mov)],['زمن التوقف (دقيقة)',mins(a.stp)],['بدون إشارة (دقيقة)',mins(a.gap)],['متوسط سرعة الحركة (كم/س)',avgKmh(a)],['أقصى سرعة (كم/س)',Math.round(a.max*3.6)],['عدد التوقفات (5 دقائق فأكثر)',a.stops.length],['عدد النقاط',rpts.length]];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,mkSheet(['البند','القيمة'],sum,[30,22]),'ملخص');
+    XLSX.utils.book_append_sheet(wb,mkSheet(['اليوم','الوقت','وقت الانتظار (دقيقة)','المنطقة / النقطة','داخل شركة','السرعة (كم/س)'],rows.map(r=>{const d=new Date(r.p.t);return [day(r.p.t),`${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`,mins(r.wait),r.place,r.co?'نعم':'',r.spd===''?'':r.spd]}),[12,10,20,52,12,14]),'السجل');
+    saveXLSX(wb,`track-${name}-${date}.xlsx`);
+  }catch(e){toast(e.message||'تعذّر إنشاء ملف Excel')}
+  finally{csvBusy=false;if(btn){btn.disabled=false;btn.textContent=old||'تصدير Excel'}}
+}
+
+// ---------- ملخص فترة (أسبوعي / شهري) لكل المتتبعين ----------
+function sumBlock(){
+  const tr=db.users.filter(u=>u.role==='tracker');
+  return `<div class="n" style="margin-top:14px"><h3 style="margin:0 0 6px">ملخص فترة (أسبوعي / شهري)</h3>
+  <p class="mut">الكيلومترات وزمن الحركة والتوقف والزيارات لكل متتبع في فترة. البيانات تُقرأ من قاعدة البيانات فالفترات الطويلة تأخذ وقتًا (الحد الأقصى 62 يومًا).</p>
+  <label>المتتبع</label><select id="sm_u"><option value="all">كل المتتبعين</option>${tr.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+  <label>من تاريخ</label><input id="sm_f" type="date" value="${day(Date.now()-6*864e5)}"><label>إلى تاريخ</label><input id="sm_t" type="date" value="${day(Date.now())}">
+  <div class="r"><button onclick="sumRange(7)">آخر 7 أيام</button><button onclick="sumRange(30)">آخر 30 يومًا</button><button onclick="sumRange(0)">الشهر الحالي</button></div>
+  <div class="r"><button class="p" id="smBtn" onclick="showSum()">عرض الملخص</button><button id="smXls" onclick="sumXlsx()">تصدير Excel</button></div>
+  <div id="sout" style="margin-top:12px"></div></div>`;
+}
+function sumRange(n){const t=new Date(),f=n===0?new Date(t.getFullYear(),t.getMonth(),1):new Date(Date.now()-(n-1)*864e5);$('#sm_f').value=day(f.getTime());$('#sm_t').value=day(t.getTime())}
+let sumData=null,sumBusy=false;
+function dayRow(tr,d,pts){
+  const plans=(db.dailyPlans||[]).filter(p=>p.userId===tr.id&&p.date===d),pl=new Set(plans.flatMap(p=>p.companyIds||[])),dn=new Set([...pl].filter(id=>plans.some(p=>isDone(p,id))));
+  const r={id:tr.id,name:tr.name,date:d,has:false,km:0,mov:0,stp:0,gap:0,stops:0,max:0,start:null,end:null,planned:pl.size,done:dn.size,gps:0};
+  if(pts.length<2)return r;
+  const a=analyze(pts),reached=new Set();pts.forEach(p=>{const c=nearCompany(p);if(c)reached.add(c.id)});
+  return Object.assign(r,{has:true,km:a.dist/1000,mov:a.mov,stp:a.stp,gap:a.gap,stops:a.stops.length,max:a.max*3.6,start:pts[0].t,end:pts[pts.length-1].t,gps:pl.size?[...reached].filter(id=>pl.has(id)).length:reached.size});
+}
+async function collectSum(){
+  const u=$('#sm_u').value,f=$('#sm_f').value,t=$('#sm_t').value,o=$('#sout');
+  if(!fb)throw Error('قاعدة البيانات غير متصلة');
+  if(!f||!t||f>t)throw Error('اختر فترة صحيحة (من ≤ إلى)');
+  if((new Date(t)-new Date(f))/864e5>61)throw Error('الحد الأقصى للفترة 62 يومًا');
+  const trs=db.users.filter(x=>x.role==='tracker'&&(u==='all'||x.id===u));
+  if(!trs.length)throw Error('لا يوجد متتبعون');
+  try{const vs=await R('visits').orderByKey().startAt(f).endAt(t).get();if(vs.exists())Object.entries(vs.val()).forEach(([k,v])=>{visitsDB[k]=v})}catch(e){}
+  const rows=[];
+  for(let i=0;i<trs.length;i++){
+    const tr=trs[i];o.innerHTML=`<p class="mut">جاري تحميل بيانات ${esc(tr.name)} (${i+1}/${trs.length})…</p>`;
+    const sn=await R('tracks/'+tr.id).orderByKey().startAt(f).endAt(t).get(),v=sn.exists()?sn.val():{},dates=new Set(Object.keys(v));
+    (db.dailyPlans||[]).forEach(p=>{if(p.userId===tr.id&&p.date>=f&&p.date<=t)dates.add(p.date)});
+    [...dates].sort().forEach(d=>{const pts=v[d]?Object.values(v[d]).filter(okPt).map(mapPt).sort((a,b)=>a.t-b.t):[];rows.push(dayRow(tr,d,pts))});
+    await new Promise(r=>setTimeout(r,0));
+  }
+  const by={};
+  rows.forEach(r=>{const b=by[r.id]=by[r.id]||{id:r.id,name:r.name,days:0,km:0,mov:0,stp:0,gap:0,stops:0,planned:0,done:0,gps:0};if(r.has)b.days++;['km','mov','stp','gap','stops','planned','done','gps'].forEach(k=>b[k]+=r[k])});
+  trs.forEach(tr=>{if(!by[tr.id])by[tr.id]={id:tr.id,name:tr.name,days:0,km:0,mov:0,stp:0,gap:0,stops:0,planned:0,done:0,gps:0}});
+  return{f,t,rows,tot:Object.values(by)};
+}
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+async function showSum(){
+  if(sumBusy)return;sumBusy=true;const btn=$('#smBtn');if(btn)btn.disabled=true;const o=$('#sout');
+  try{
+    const d=await collectSum();sumData=d;
+    if(!d.rows.length){o.innerHTML='<p class="mut">لا توجد بيانات تتبع ولا خطط في هذه الفترة</p>';return}
+    const T=d.tot.reduce((a,b)=>({km:a.km+b.km,mov:a.mov+b.mov,stp:a.stp+b.stp,days:a.days+b.days,planned:a.planned+b.planned,done:a.done+b.done}),{km:0,mov:0,stp:0,days:0,planned:0,done:0});
+    o.innerHTML=`<p class="mut">الفترة: ${esc(d.f)} → ${esc(d.t)}</p>
+    <div class="g">${[['إجمالي الكيلومترات',T.km.toFixed(1)+' كم'],['أيام تتبع (مجموع)',T.days],['زمن الحركة',fm(T.mov)],['زمن التوقف',fm(T.stp)],['الزيارات (تمت/مخططة)',T.done+' / '+T.planned],['نسبة الإنجاز',pct(T.done,T.planned)]].map(x=>`<div class="c"><h3 style="font-size:18px">${x[1]}</h3><span>${x[0]}</span></div>`).join('')}</div>
+    <h3>إجمالي كل متتبع</h3><div class="w"><table><tr><th>المتتبع</th><th>أيام التتبع</th><th>الكيلومترات</th><th>متوسط كم/يوم</th><th>زمن الحركة</th><th>زمن التوقف</th><th>توقفات (5د+)</th><th>زيارات مخططة</th><th>تمت (السائق)</th><th>وصل (GPS)</th><th>الإنجاز</th></tr>
+    ${d.tot.map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${b.days}</td><td>${b.km.toFixed(1)}</td><td>${b.days?(b.km/b.days).toFixed(1):'—'}</td><td>${fm(b.mov)}</td><td>${fm(b.stp)}</td><td>${b.stops}</td><td>${b.planned}</td><td>${b.done}</td><td>${b.gps}</td><td>${pct(b.done,b.planned)}</td></tr>`).join('')}</table></div>
+    <h3>التفاصيل اليومية</h3><div class="w"><table><tr><th>التاريخ</th><th>المتتبع</th><th>البداية</th><th>النهاية</th><th>كم</th><th>زمن الحركة</th><th>زمن التوقف</th><th>بدون إشارة</th><th>أقصى سرعة</th><th>توقفات</th><th>مخطط</th><th>تمت</th><th>وصل (GPS)</th></tr>
+    ${d.rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.name)}</td>${r.has?`<td>${tmS(r.start)}</td><td>${tmS(r.end)}</td><td>${r.km.toFixed(1)}</td><td>${fm(r.mov)}</td><td>${fm(r.stp)}</td><td>${r.gap>=300000?fm(r.gap):'—'}</td><td>${Math.round(r.max)}</td><td>${r.stops}</td>`:`<td colspan="8" class="warn">لم يتتبع في هذا اليوم</td>`}<td>${r.planned||'—'}</td><td>${r.planned?r.done:'—'}</td><td>${r.has?r.gps:'—'}</td></tr>`).join('')}</table></div>
+    <p class="mut">«وصل (GPS)» = عدد شركات الخطة التي دخلها المتتبع فعليًا في نطاق ${cRad()} متر (وعند عدم وجود خطة: عدد أي شركات وصل لها). «تمت (السائق)» = ما علّمه السائق في صفحته.</p>`;
+  }catch(e){o.innerHTML='';toast(e.message||'تعذّر تحميل الملخص')}
+  finally{sumBusy=false;if(btn)btn.disabled=false}
+}
+async function sumXlsx(){
+  if(!sumData)return toast('اعرض الملخص أولاً');
+  const btn=$('#smXls'),old=btn?.textContent;if(btn)btn.disabled=true;
+  try{
+    await loadXLSX();const d=sumData,wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,mkSheet(['المتتبع','أيام التتبع','الكيلومترات','متوسط كم/يوم','زمن الحركة (دقيقة)','زمن التوقف (دقيقة)','بدون إشارة (دقيقة)','توقفات (5د+)','زيارات مخططة','تمت (السائق)','وصل (GPS)','الإنجاز'],
+      d.tot.map(b=>[b.name,b.days,+b.km.toFixed(1),b.days?+(b.km/b.days).toFixed(1):'',mins(b.mov),mins(b.stp),mins(b.gap),b.stops,b.planned,b.done,b.gps,pct(b.done,b.planned)]),[24,12,14,14,18,18,18,14,14,14,12,10]),'إجمالي المتتبعين');
+    XLSX.utils.book_append_sheet(wb,mkSheet(['التاريخ','المتتبع','البداية','النهاية','كم','زمن الحركة (دقيقة)','زمن التوقف (دقيقة)','بدون إشارة (دقيقة)','أقصى سرعة (كم/س)','توقفات (5د+)','مخطط','تمت (السائق)','وصل (GPS)','ملاحظة'],
+      d.rows.map(r=>[r.date,r.name,r.has?tmS(r.start):'',r.has?tmS(r.end):'',+r.km.toFixed(1),mins(r.mov),mins(r.stp),mins(r.gap),Math.round(r.max),r.stops,r.planned,r.planned?r.done:'',r.has?r.gps:'',r.has?'':'لم يتتبع']),[12,24,10,10,10,18,18,18,16,12,10,14,12,14]),'تفاصيل يومية');
+    saveXLSX(wb,`summary-${d.f}_${d.t}.xlsx`);
+  }catch(e){toast(e.message||'تعذّر إنشاء ملف Excel')}
+  finally{if(btn){btn.disabled=false;btn.textContent=old||'تصدير Excel'}}
+}
+
+// ---------- ملء الشاشة للخرائط ----------
+let fsMap=null;
+function fsReset(){
+  document.querySelectorAll('.mapfs').forEach(e=>e.classList.remove('mapfs'));
+  document.body.classList.remove('fs-on','fs-live','fs-rep');fsMap=null;
+  if(document.fullscreenElement&&document.exitFullscreen)try{document.exitFullscreen().catch(()=>{})}catch(e){}
+}
+function exitFS(){
+  const m=fsMap;fsReset();
+  if(m)try{if(m._fsa){m._fsa.innerHTML='⛶';m._fsa.title='ملء الشاشة'}setTimeout(()=>m.invalidateSize(),80)}catch(e){}
+}
+function toggleFS(m){
+  if(fsMap===m){exitFS();return}
+  if(fsMap)exitFS();
+  const el=m.getContainer();fsMap=m;
+  el.classList.add('mapfs');document.body.classList.add('fs-on');
+  document.body.classList.toggle('fs-live',el.id==='map');document.body.classList.toggle('fs-rep',el.id==='rmap');
+  if(m._fsa){m._fsa.innerHTML='✕';m._fsa.title='خروج من ملء الشاشة'}
+  /* على الكمبيوتر نطلب ملء شاشة المتصفح أيضًا؛ على الآيفون يكفي الوضع الداخلي */
+  try{const de=document.documentElement;if(de.requestFullscreen)de.requestFullscreen().catch(()=>{})}catch(e){}
+  setTimeout(()=>m.invalidateSize(),80);
+}
+function addFS(m){
+  const C=L.Control.extend({options:{position:'topleft'},onAdd(){
+    const c=L.DomUtil.create('div','leaflet-bar leaflet-control'),b=L.DomUtil.create('a','',c);
+    b.href='#';b.title='ملء الشاشة';b.innerHTML='⛶';b.setAttribute('role','button');m._fsa=b;
+    L.DomEvent.disableClickPropagation(c);L.DomEvent.on(b,'click',e=>{L.DomEvent.preventDefault(e);toggleFS(m)});return c}});
+  new C().addTo(m);
+}
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fsMap)exitFS()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsMap)exitFS()});
+
+// ---------- تسجيل الزيارات تلقائيًا ----------
+/* الفكرة: هاتف المتتبع هو اللي بيكتشف الوصول (نطاق + مدة بقاء) ويكتب سجلًا صغيرًا في visits/<التاريخ>/<المتتبع>/<الشركة>
+   بدل ما يحفظ قاعدة البيانات كلها، فمفيش خطر إنه يمسح تعديلات المدير. الزيارة تُحسب «تمت» لو علّمها السائق يدويًا أو سجّلها النظام. */
+let visitsDB={},visitsQ=null,myVQ=null,myVDay='',myVReady=false,geoSt={};
+const visitCfg=()=>({on:db.visitAuto!==false,rad:Math.min(1000,Math.max(30,Number(db.visitRadius)||200)),dwell:Math.min(3600,Math.max(0,db.visitDwell==null||db.visitDwell===''?60:Number(db.visitDwell)||0))*1000});
+const cRad=()=>visitCfg().rad;
+function visitRec(date,u,cid){const r=visitsDB&&visitsDB[date]&&visitsDB[date][u]&&visitsDB[date][u][cid];return r&&!r.cancelled?r:null}
+const isDone=(plan,cid)=>(plan.completedIds||[]).includes(cid)||!!visitRec(plan.date,plan.userId,cid);
+function visitsTodayTxt(){const d=day(Date.now()),ps=(db.dailyPlans||[]).filter(p=>p.date===d),tot=ps.reduce((a,p)=>a+(p.companyIds||[]).length,0),dn=ps.reduce((a,p)=>a+(p.companyIds||[]).filter(id=>isDone(p,id)).length,0);return tot?dn+' / '+tot:'—'}
+function unwatchVisits(){try{myVQ&&myVQ.off()}catch(e){}myVQ=null;myVDay='';myVReady=false;geoSt={};visitsDB={}}
+function watchMyVisits(){
+  if(!fb||!me||me.role!=='tracker')return;const d=day(Date.now());if(myVQ&&myVDay===d)return;
+  try{myVQ&&myVQ.off()}catch(e){}
+  myVDay=d;myVReady=false;myVQ=R(`visits/${d}/${me.id}`);
+  myVQ.on('value',sn=>{visitsDB[d]=visitsDB[d]||{};visitsDB[d][me.id]=sn.val()||{};myVReady=true;scheduleRefresh()});
+}
+function autoVisit(pt){
+  const cfg=visitCfg();if(!cfg.on||!me||me.role!=='tracker'||!fb)return;
+  watchMyVisits();if(!myVReady)return;               /* ننتظر تحميل سجلات اليوم حتى لا نكرر تسجيل زيارة موجودة */
+  if(pt.a!=null&&pt.a>100)return;                    /* دقة الموقع ضعيفة: نتجاهل هذه النقطة */
+  const d=day(pt.t);
+  activePlansForUser(me.id,d).forEach(plan=>(plan.companyIds||[]).forEach(cid=>{
+    const c=companyById(cid);if(!c||c.lat===''||c.lng===''||!Number.isFinite(Number(c.lat))||!Number.isFinite(Number(c.lng)))return;
+    const key=d+'|'+cid;
+    if(isDone(plan,cid)||(visitsDB[d]&&visitsDB[d][me.id]&&visitsDB[d][me.id][cid])){delete geoSt[key];return}   /* مكتملة، أو أُلغيت يدويًا: لا نسجّلها ثانيةً */
+    const dist=hav(pt,{lat:Number(c.lat),lng:Number(c.lng)});
+    if(dist>cfg.rad){delete geoSt[key];return}
+    const g=geoSt[key]=geoSt[key]||{since:pt.t,busy:false};
+    if(g.busy||pt.t-g.since<cfg.dwell)return;
+    g.busy=true;
+    const rec={t:g.since,c:pt.t,d:Math.round(dist),a:pt.a==null?null:pt.a,auto:1};
+    R(`visits/${d}/${me.id}/${cid}`).transaction(cur=>cur?undefined:rec).then(r=>{if(r.committed)toast(`✅ تم تسجيل زيارة «${c.name}» تلقائيًا`)}).catch(e=>{g.busy=false;tinfo.err='تعذّر تسجيل الزيارة: '+e.message;upd()});
+  }));
+}
+
+// ---------- تقرير زيارات الشركات (يومي / شهري) ----------
+const dayName=d=>new Date(d+'T12:00:00').toLocaleDateString(LOCALE,{weekday:'long'});
+let visData=null,visBusy=false;
+function visBlock(){
+  const tr=db.users.filter(u=>u.role==='tracker');
+  return `<div class="n" style="margin-top:14px"><h3 style="margin:0 0 6px">تقرير زيارات الشركات (يومي / شهري)</h3>
+  <p class="mut">اختر المتتبع والفترة، فيظهر لكل يوم اسمه وجانبه الشركات اللي المتتبع زارها فعليًا (من مسار الـ GPS والتسجيل التلقائي) مع وقت الوصول والمغادرة ومدة البقاء، وشركات الخطة اللي لم تتم.</p>
+  <label>المتتبع</label><select id="vr_u"><option value="all">كل المتتبعين</option>${tr.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+  <label>نوع التقرير</label><select id="vr_m" onchange="vrMode()"><option value="day">يوم واحد</option><option value="month">شهر كامل</option></select>
+  <div id="vr_dw"><label>اليوم</label><input id="vr_d" type="date" value="${day(Date.now())}"></div>
+  <div id="vr_mw" style="display:none"><label>الشهر</label><input id="vr_mo" type="month" value="${day(Date.now()).slice(0,7)}"></div>
+  <div class="r"><button class="p" id="vrBtn" onclick="showVis()">عرض التقرير</button><button id="vrXls" onclick="visXlsx()">تصدير Excel</button><button id="vrPdf" onclick="visPrint()">طباعة / PDF</button></div>
+  <div id="vout" style="margin-top:12px"></div></div>`;
+}
+function vrMode(){const m=$('#vr_m').value;$('#vr_dw').style.display=m==='day'?'':'none';$('#vr_mw').style.display=m==='month'?'':'none'}
+/* نقاط المسار → فترات وجود داخل نطاق شركة (نفس الشركة وبدون فجوة إشارة)، ثم دمج فترات نفس الشركة في اليوم */
+function visitsOfDay(pts){
+  const sg=[];let cur=null;
+  for(const p of pts){const c=nearCompany(p);
+    if(c&&cur&&cur.c.id===c.id&&p.t-cur.last<=GAP_MS)cur.last=p.t;
+    else{if(cur)sg.push(cur);cur=c?{c,first:p.t,last:p.t}:null}}
+  if(cur)sg.push(cur);
+  const m=new Map(),min=visitCfg().dwell;
+  sg.forEach(x=>{const dw=x.last-x.first;if(dw<min)return;const e=m.get(x.c.id);if(e){e.last=x.last;e.dwell+=dw}else m.set(x.c.id,{c:x.c,first:x.first,last:x.last,dwell:dw})});
+  return [...m.values()];
+}
+function visDayList(tr,d,pts){
+  const list=new Map(),recs=(visitsDB&&visitsDB[d]&&visitsDB[d][tr.id])||{};
+  visitsOfDay(pts).forEach(v=>list.set(v.c.id,{c:v.c,first:v.first,last:v.last,dwell:v.dwell,src:'gps'}));
+  Object.entries(recs).forEach(([cid,r])=>{const c=companyById(cid);if(!r||!c||r.cancelled||list.has(cid))return;list.set(cid,{c,first:r.t,last:r.c||r.t,dwell:Math.max(0,(r.c||r.t)-r.t),src:'auto'})});
+  const plans=(db.dailyPlans||[]).filter(p=>p.userId===tr.id&&p.date===d),planned=new Set(plans.flatMap(p=>p.companyIds||[])),man=new Set(plans.flatMap(p=>p.completedIds||[]));
+  Object.entries(recs).forEach(([cid,r])=>{if(r&&r.cancelled&&!man.has(cid))list.delete(cid)});   /* زيارة ألغاها المدير/السائق يدويًا */
+  man.forEach(cid=>{if(!list.has(cid)){const c=companyById(cid);if(c)list.set(cid,{c,first:null,last:null,dwell:0,src:'manual'})}});
+  const items=[...list.values()].map(x=>({...x,planned:planned.has(x.c.id)})).sort((a,b)=>(a.first||1e15)-(b.first||1e15));
+  const missed=[...planned].filter(id=>!list.has(id)).map(id=>companyById(id)).filter(Boolean);
+  return{items,missed,plannedN:planned.size};
+}
+async function collectVis(){
+  const u=$('#vr_u').value,mode=$('#vr_m').value,o=$('#vout');let f,t;
+  const today=day(Date.now());
+  if(mode==='day'){f=t=$('#vr_d').value;if(!f)throw Error('اختر اليوم')}
+  else{const mo=$('#vr_mo').value;if(!mo)throw Error('اختر الشهر');const [y,m]=mo.split('-').map(Number);f=day(new Date(y,m-1,1,12).getTime());t=day(new Date(y,m,0,12).getTime());if(f>today)throw Error('هذا الشهر لم يبدأ بعد');if(t>today)t=today}
+  if(!fb)throw Error('قاعدة البيانات غير متصلة');
+  const trs=db.users.filter(x=>x.role==='tracker'&&(u==='all'||x.id===u));if(!trs.length)throw Error('لا يوجد متتبعون');
+  const dates=[];for(let c=new Date(f+'T12:00:00');day(c.getTime())<=t;c.setDate(c.getDate()+1))dates.push(day(c.getTime()));
+  try{const vs=await R('visits').orderByKey().startAt(f).endAt(t).get();if(vs.exists())Object.entries(vs.val()).forEach(([k,v])=>{visitsDB[k]=v})}catch(e){}
+  const blocks=[];
+  for(let i=0;i<trs.length;i++){
+    const tr=trs[i];o.innerHTML=`<p class="mut">جاري تحميل بيانات ${esc(tr.name)} (${i+1}/${trs.length})…</p>`;
+    const sn=await R('tracks/'+tr.id).orderByKey().startAt(f).endAt(t).get(),v=sn.exists()?sn.val():{},days=[];
+    for(const d of dates){const pts=v[d]?Object.values(v[d]).filter(okPt).map(mapPt).sort((a,b)=>a.t-b.t):[];days.push({d,...visDayList(tr,d,pts)});await new Promise(r=>setTimeout(r,0))}
+    blocks.push({tr,days});
+  }
+  return{f,t,mode,blocks};
+}
+function visHTML(d){
+  const tag=(t,col)=>`<span style="background:${col};color:#fff;border-radius:6px;padding:1px 7px;font-size:11px;white-space:nowrap">${t}</span>`;
+  const chip=i=>`<div class="vchip">🏢 <b>${esc(i.c.name)}</b> <span style="opacity:.75;font-size:12px">${i.first?`${tmS(i.first)} → ${tmS(i.last)} · ${fm(i.dwell)}`:''}</span> ${tag(i.src==='gps'?'📍 GPS':i.src==='auto'?'📍 تلقائي':'✋ يدوي',i.src==='manual'?'#53657a':'#16864a')} ${i.planned?'':tag('خارج الخطة','#b45309')}</div>`;
+  const miss=c=>`<div class="vchip">⛔ <b>${esc(c.name)}</b> ${tag('لم تتم','#c0392b')}</div>`;
+  return d.blocks.map(b=>{
+    const tot=b.days.reduce((a,x)=>a+x.items.length,0),act=b.days.filter(x=>x.items.length).length;
+    return `<h3 style="margin:14px 0 4px">${esc(b.tr.name)}</h3><p style="margin:0 0 6px;opacity:.75">${tot} زيارة في ${act} يوم${b.days.length>1?` من ${b.days.length}`:''}</p>
+    <div class="w"><table style="width:100%"><tr><th style="min-width:100px">اليوم</th><th>الشركات</th><th>العدد</th></tr>
+    ${b.days.map(x=>{const ok=x.items.filter(i=>i.planned).length;return `<tr><td><b>${dayName(x.d)}</b><br><small>${x.d}</small></td><td>${x.items.map(chip).join('')}${x.missed.map(miss).join('')}${x.items.length||x.missed.length?'':'<span style="opacity:.6">لا زيارات</span>'}</td><td>${x.items.length}${x.plannedN?`<br><small>الخطة ${ok}/${x.plannedN}</small>`:''}</td></tr>`}).join('')}</table></div>`}).join('');
+}
+async function showVis(){
+  if(visBusy)return;visBusy=true;const btn=$('#vrBtn');if(btn)btn.disabled=true;const o=$('#vout');
+  try{const d=await collectVis();visData=d;o.innerHTML=`<p class="mut">الفترة: ${esc(d.f)}${d.t!==d.f?' → '+esc(d.t):''} · «📍» = مؤكدة من مسار الـ GPS أو التسجيل التلقائي، «✋ يدوي» = علّمها السائق فقط بدون إثبات من الموقع.</p>`+visHTML(d)}
+  catch(e){o.innerHTML='';toast(e.message||'تعذّر تحميل التقرير')}
+  finally{visBusy=false;if(btn)btn.disabled=false}
+}
+const srcTxt=x=>x==='gps'?'GPS':x==='auto'?'تلقائي':'يدوي (السائق)';
+async function visXlsx(){
+  if(!visData)return toast('اعرض التقرير أولاً');
+  const btn=$('#vrXls'),old=btn?.textContent;if(btn)btn.disabled=true;
+  try{
+    await loadXLSX();const d=visData,rows=[],sum=[];
+    d.blocks.forEach(b=>b.days.forEach(x=>{
+      x.items.forEach(i=>rows.push([b.tr.name,x.d,dayName(x.d),i.c.name,i.first?tmS(i.first):'',i.last?tmS(i.last):'',i.first?mins(i.dwell):'',i.planned?'نعم':'لا',srcTxt(i.src)]));
+      x.missed.forEach(c=>rows.push([b.tr.name,x.d,dayName(x.d),c.name,'','','','نعم','لم تتم']));
+      sum.push([b.tr.name,x.d,dayName(x.d),x.items.length,x.items.map(i=>i.c.name).join('، '),x.missed.map(c=>c.name).join('، ')]);
+    }));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,mkSheet(['المتتبع','التاريخ','اليوم','عدد الزيارات','الشركات','شركات الخطة التي لم تتم'],sum,[22,12,12,14,60,40]),'ملخص الأيام');
+    XLSX.utils.book_append_sheet(wb,mkSheet(['المتتبع','التاريخ','اليوم','الشركة','الوصول','المغادرة','مدة البقاء (دقيقة)','ضمن الخطة','المصدر / الحالة'],rows,[22,12,12,34,10,10,18,12,16]),'الزيارات');
+    saveXLSX(wb,`visits-${d.f}${d.t!==d.f?'_'+d.t:''}.xlsx`);
+  }catch(e){toast(e.message||'تعذّر إنشاء ملف Excel')}
+  finally{if(btn){btn.disabled=false;btn.textContent=old||'تصدير Excel'}}
+}
+function visPrint(){
+  if(!visData)return toast('اعرض التقرير أولاً');
+  const w=window.open('','_blank');if(!w)return toast('اسمح للنوافذ المنبثقة (Pop-ups) ثم أعد المحاولة');
+  w.document.open();
+  w.document.write(`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>تقرير زيارات الشركات</title><style>body{font-family:Tahoma,Arial,sans-serif;color:#13233a;padding:24px}h1{font-size:20px;margin:0 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:12px}th,td{border:1px solid #c9d3df;padding:6px 8px;font-size:12px;text-align:right;vertical-align:top}th{background:#eef3f8}.vchip{padding:3px 0;border-bottom:1px dashed #d5dde6}.vchip:last-child{border:0}tr{page-break-inside:avoid}
+</style></head><body><h1>تقرير زيارات الشركات</h1><div style="opacity:.75;margin-bottom:10px">الفترة: ${esc(visData.f)}${visData.t!==visData.f?' → '+esc(visData.t):''}</div>${visHTML(visData)}</body></html>`);
+  w.document.close();setTimeout(()=>{try{w.print()}catch(e){}},500);
+}
+
+// ---------- العناوين (OpenStreetMap Nominatim) ----------
+const AC=JSON.parse(LS.aff_addr2||'{}'),ak=(a,b)=>a.toFixed(4)+','+b.toFixed(4);
+// المنطقة الكبيرة (حي/منطقة + مدينة) واسم الشارع، بدل العنوان الطويل العشوائي.
+const areaOf=a=>{const s=a.suburb||a.city_district||a.quarter||a.neighbourhood||a.village||a.town||a.county||a.state_district,c=a.city||a.town||a.state;return [s,c].filter((x,i,r)=>x&&r.indexOf(x)===i).join('، ')};
+const roadOf=a=>a.road||a.pedestrian||a.residential||a.footway||a.path||'';
+function fmtAddr(o,m){
+  const ar=o.area||'',rd=o.road||'';
+  if(m==='area')return ar||o.full||'عنوان غير معروف';
+  if(m==='road')return rd?(rd+(ar?'، '+ar:'')):(ar||o.full||'عنوان غير معروف');
+  return (ar||o.full||'عنوان غير معروف')+(rd?' – '+rd:'');
+}
+async function addr(a,b){
+  const k=ak(a,b);if(AC[k])return AC[k];
+  const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&accept-language=ar&lat=${a}&lon=${b}`);
+  if(!r.ok)throw Error(r.status);const j=await r.json(),ad=j.address||{};
+  AC[k]={area:areaOf(ad),road:roadOf(ad)||j.name||'',full:j.display_name||''};LS.aff_addr2=JSON.stringify(AC);return AC[k];
+}
+async function fillAddr(){
+  for(const e of document.querySelectorAll('[data-ad]')){
+    const [a,b]=e.dataset.ad.split(',').map(Number),cached=!!AC[ak(a,b)];
+    try{const o=await addr(a,b);
+      if(e.dataset.fmt==='stack')e.innerHTML='<b>'+esc(fmtAddr(o,'area'))+'</b>'+(o.road?'<br><small class="mut">🛣️ '+esc(o.road)+'</small>':'');
+      else e.textContent=fmtAddr(o,e.dataset.fmt||'line')}catch(x){e.textContent='تعذّر جلب العنوان'}
+    if(!cached)await new Promise(r=>setTimeout(r,1100));
+  }
+}
+
+// ---------- تصفير بيانات محددة ----------
+async function resetSel(){
+  const c=n=>$('#rs_'+n).checked,ut=$('#rt_u').value,from=$('#rt_f').value,to=$('#rt_t').value;
+  if(!['vehicles','drivers','devices','positions'].some(c)&&!ut)return toast('اختر ما تريد تصفيره');
+  if(ut&&!fb)return toast('قاعدة البيانات غير متصلة');
+  if(prompt('للتأكيد اكتب كلمة: تصفير')!=='تصفير')return;
+  exp();
+  if(c('vehicles')){db.vehicles=[];db.devices.forEach(d=>d.vehicleId='')}
+  if(c('drivers')){db.drivers=[];db.vehicles.forEach(v=>v.driverId='')}
+  if(c('devices')){db.devices=[];db.positions={}}
+  if(c('positions'))db.positions={};
+  await save();
+  if(fb&&(c('positions')||c('devices')))try{await R('positions').remove()}catch(e){}
+  if(ut){
+    const ids=ut==='all'?db.users.filter(u=>u.role==='tracker').map(u=>u.id):[ut];let n=0;
+    for(const id of ids){
+      const sn=await R('tracks/'+id).get();if(!sn.exists())continue;
+      for(const d of Object.keys(sn.val())){if((from&&d<from)||(to&&d>to))continue;
+        try{await R(`tracks/${id}/${d}`).remove();n++}catch(e){}}
+      if(!from&&!to)try{await R('live/'+id).remove()}catch(e){}
+    }
+    toast('تم حذف '+n+' يوم مسار');    liveT={};toast('تم حذف '+n+' ملف مسار');
+  }else toast('تم التصفير');
+  render();
+}
+
+// ---------- العرض ----------
+const IC={dash:'📊',map:'🗺️',companies:'🏢',vehicles:'🚗',drivers:'🧑‍✈️',devices:'📡',alerts:'🔔',rep:'📈',track:'📍',users:'👥',settings:'⚙️',dbset:'🗄️',maint:'🛠️'};
+const P={dash:['لوحة التحكم',dash],map:['الخريطة',mapPage],companies:['الشركات والزيارات',companiesRoutesPage],vehicles:['المركبات',()=>list('vehicles')],drivers:['السائقون',()=>list('drivers')],devices:['الأجهزة',()=>list('devices')],alerts:['التنبيهات',alertsPage],rep:['تقارير المتتبعين',repPage],track:['تتبّع موقعي',trackPage],users:['المستخدمون',users],settings:['الإعدادات',settings],dbset:['إعدادات قاعدة البيانات والخادم',dbPage],maint:['الصيانة',mtPage]};
+function go(p){page=p;render()}
+function render(){renderBase();postRender()}
+function renderBase(){
+  fsReset();const a=$('#app');
+  if(!me&&!dbReady){a.innerHTML=connectionPage();return}
+  if(!me){a.innerHTML=login();return}
+  if(!allowed(page))page=homePage();
+  a.innerHTML=`<div class="shell"><button class="mnu" onclick="document.querySelector('aside').classList.toggle('open')">☰</button><aside><div class="brand">🚚 AFF<small>تتبع المركبات</small></div><nav>${navHTML()}</nav><div class="usr"><div class="uc"><span class="av">${esc((me.name||'?').trim().charAt(0).toUpperCase())}</span><div><b>${esc(me.name)}</b><small>${esc(RN[me.role]||'')}</small></div>${isAdmin()?`<button class="gear" title="${T('الإعدادات','Settings')}" onclick="ddToggle(event,'settings,dbset')">⚙️</button>`:''}</div><button onclick="logout()">⎋ خروج</button></div></aside><div class="content"><main>${P[page][1]()}</main></div></div>`;
+  if(page==='map')drawMap();
+  if(page==='track'){trkSig=JSON.stringify([db.companies,db.dailyPlans,visitsDB]);upd();drawDriverRouteMap();if(!manualStop&&wid==null)startTrack()}
+}
+// تحديث دوري خفيف (لحساب «متصل/غير متصل» والأوقات) — والبيانات نفسها تصل لحظيًا من Firebase.
+setInterval(()=>{if(me&&me.role!=='tracker')scheduleRefresh()},15000);
+// ======== [UPDATE] Maintenance module (oil & tires) ========
+TR['الصيانة']='Maintenance';
+const mt=()=>{const m=db.maint=db.maint||{};m.plans=m.plans||[];m.recs=m.recs||[];m.odo=m.odo||{};m.notif=m.notif||[];m.cfg=m.cfg||{km:[1000,500],days:[14,7]};return m};
+let mtTab='over',mtF={v:'',d:'',k:'',f:'',t:''};
+const MK={oil:['زيت المحرك','Engine oil'],tire:['الإطارات','Tires']};
+const MA={replace:['تغيير','Replacement'],inspect:['فحص','Inspection'],rotate:['تدوير','Rotation'],repair:['إصلاح','Repair'],pressure:['فحص ضغط الهواء','Pressure check'],change:['تغيير زيت','Oil change']};
+const TP={all:['طقم كامل','Full set'],fl:['أمامي يسار','Front-left'],fr:['أمامي يمين','Front-right'],rl:['خلفي يسار','Rear-left'],rr:['خلفي يمين','Rear-right']};
+const L2=(o,k)=>(o[k]||[k,k])[LANG==='en'?1:0];
+const vById=id=>db.vehicles.find(v=>v.id===id),vN=id=>{const v=vById(id);return v?(v.name||v.plate):'—'},dN=id=>{const v=vById(id);return v&&v.driverId?lookup('drivers',v.driverId)||'—':'—'};
+const addD=(d,mo,dd)=>{const x=new Date(d+'T00:00:00');x.setMonth(x.getMonth()+(+mo||0));x.setDate(x.getDate()+(+dd||0));return day(x.getTime())};
+function odoCur(vid){let b=null;const o=mt().odo[vid];if(o)b={km:+o.km,date:o.date,src:T('إدخال يدوي','Manual entry')};
+ mt().recs.filter(r=>r.vehicleId===vid&&r.km!=null&&r.km!=='').forEach(r=>{if(!b||+r.km>b.km)b={km:+r.km,date:r.date,src:T('سجل صيانة','Service record')}});return b}
+function pc(p){const c=mt().cfg,o=odoCur(p.vehicleId),nk=p.intKm?(+p.lastKm||0)+ +p.intKm:null,nd=(p.intMonths||p.intDays)&&p.lastDate?addD(p.lastDate,p.intMonths,p.intDays):null;
+ const rk=nk!=null&&o?nk-o.km:null,rd=nd?Math.round((new Date(nd+'T00:00:00')-new Date(day(Date.now())+'T00:00:00'))/864e5):null;
+ let st='ok',lv=0;const mk=Math.max(0,...c.km),md=Math.max(0,...c.days);
+ if((rk!=null&&rk<0)||(rd!=null&&rd<0))st='overdue';else if((rk!=null&&rk===0)||(rd!=null&&rd===0))st='due';
+ else if((rk!=null&&rk<=mk)||(rd!=null&&rd<=md)){st='soon';lv=(rk!=null?c.km.filter(x=>rk<=x).length:0)+(rd!=null?c.days.filter(x=>rd<=x).length:0)}
+ return{nk,nd,rk,rd,st,lv,o}}
+const SL={ok:['سليم','OK','var(--ok)'],soon:['قريبًا','Due soon','var(--wa)'],due:['مستحقة اليوم','Due','var(--er)'],overdue:['متأخرة','Overdue','var(--er)']};
+const chip=st=>`<span style="color:${SL[st][2]};font-weight:700">● ${T(SL[st][0],SL[st][1])}</span>`;
+const rem=c=>[c.rk!=null?(c.rk<0?T('تجاوز ','Over by '):'')+Math.abs(c.rk)+' '+T('كم','km'):'',c.rd!=null?(c.rd<0?T('تأخر ','Late '):'')+Math.abs(c.rd)+' '+T('يوم','d'):''].filter(Boolean).join(' / ')||'—';
+const pDesc=p=>`${vN(p.vehicleId)} — ${L2(MK,p.kind)}${p.kind==='tire'?' ('+L2(TP,p.pos||'all')+')':''}`;
+function evalMaint(){const m=mt();let ch=false;m.plans.forEach(p=>{const c=pc(p);if(c.st==='ok'){if(p.nkey){p.nkey='';ch=true}return}
+ const key=c.st+':'+c.lv+':'+p.lastDate+':'+p.lastKm;if(p.nkey!==key){p.nkey=key;ch=true;m.notif.unshift({id:uid(),planId:p.id,t:Date.now(),read:0,st:c.st,msg:`${pDesc(p)} — ${T(SL[c.st][0],SL[c.st][1])}: ${rem(c)}`});m.notif=m.notif.slice(0,200)}});
+ if(ch)save()}
+function mtAlerts(){return mt().plans.map(p=>[p,pc(p)]).filter(x=>x[1].st!=='ok').map(x=>[x[1].st==='soon'?'warning':'critical',`${T('صيانة','Maintenance')}: ${pDesc(x[0])} — ${T(SL[x[1].st][0],SL[x[1].st][1])} (${rem(x[1])})`])}
+function mtDashWidget(){const a=mtAlerts();return `<div class="n"><b>🛠️ ${T('تنبيهات الصيانة','Maintenance alerts')} (${a.length})</b>${a.slice(0,6).map(x=>`<div class="mut" style="border-inline-start:3px solid ${x[0]==='critical'?'var(--er)':'var(--wa)'};padding-inline-start:8px;margin:4px 0">${esc(x[1])}</div>`).join('')||`<p class="mut">${T('لا توجد صيانة مستحقة','No maintenance due')}</p>`}<div class="r"><button onclick="mtTab='over';go('maint')">${T('فتح صفحة الصيانة','Open maintenance')}</button></div></div>`}
+function mtTabs(){const u=mt().notif.filter(n=>!n.read).length;return `<div class="r" style="margin-bottom:10px">${[['over',T('نظرة عامة','Overview')],['plans',T('خطط الصيانة','Plans')],['hist',T('السجل والتقارير','History & reports')],['alerts',T('الإشعارات','Notifications')+(u?` (${u})`:'')]].map(x=>`<button class="${mtTab===x[0]?'p':''}" onclick="mtTab='${x[0]}';render()">${x[1]}</button>`).join('')}</div>`}
+function mtPage(){const B={over:mtOver,plans:mtPlans,hist:mtHist,alerts:mtAlertsTab}[mtTab]||mtOver;return `<h2>🛠️ ${T('صيانة المركبات والسائقين','Vehicle & Driver Maintenance')}</h2>${mtTabs()}${B()}`}
+function mtOver(){const ps=mt().plans.map(p=>[p,pc(p)]),by=(v,k)=>{const x=ps.filter(q=>q[0].vehicleId===v&&q[0].kind===k);if(!x.length)return '—';const w=x.sort((a,b)=>['ok','soon','due','overdue'].indexOf(b[1].st)-['ok','soon','due','overdue'].indexOf(a[1].st))[0];return chip(w[1].st)};
+ const lst=(t,f)=>{const x=ps.filter(f);return `<div class="n"><b>${t} (${x.length})</b>${x.map(q=>`<div class="mut">${esc(pDesc(q[0]))} — ${rem(q[1])}</div>`).join('')}</div>`};
+ return `<div class="g"><div class="c"><h3>${ps.filter(q=>q[1].st==='overdue'||q[1].st==='due').length}</h3><span>${T('متأخرة / مستحقة','Overdue / due')}</span></div><div class="c"><h3>${ps.filter(q=>q[1].st==='soon').length}</h3><span>${T('مستحقة قريبًا','Due soon')}</span></div></div>
+ <div class="w"><table><tr><th>${T('المركبة','Vehicle')}</th><th>${T('السائق','Driver')}</th><th>${T('عداد المسافة','Odometer')}</th><th>${T('الزيت','Oil')}</th><th>${T('الإطارات','Tires')}</th><th></th></tr>
+ ${db.vehicles.map(v=>{const o=odoCur(v.id);return `<tr><td>${esc(v.name||v.plate)}</td><td>${esc(dN(v.id))}</td><td>${o?`${o.km.toLocaleString(LOCALE)} ${T('كم','km')}<br><span class="mut">${esc(o.src)} · ${o.date||''}</span>`:`<span class="mut">${T('لا توجد قراءة','No reading')}</span>`}</td><td>${by(v.id,'oil')}</td><td>${by(v.id,'tire')}</td><td><button onclick="mtOdo('${v.id}')">${T('تحديث العداد','Set odometer')}</button></td></tr>`}).join('')}</table></div>
+ <p class="mut">${T('مسافة GPS لا تُعتبر قراءة عداد؛ أدخل قراءة العداد الفعلية يدويًا لحساب الاستحقاق بالكيلومترات.','GPS distance is not treated as an odometer. Enter the real odometer manually for km-based due dates.')}</p>
+ ${lst('🔴 '+T('مركبات متأخرة','Overdue'),q=>q[1].st==='overdue'||q[1].st==='due')}${lst('🟠 '+T('مستحقة قريبًا','Due soon'),q=>q[1].st==='soon')}`}
+function mtOdo(vid){const o=odoCur(vid),v=prompt(T('قراءة العداد الحالية (كم) لـ ','Current odometer (km) for ')+vN(vid),o?o.km:'');if(v===null)return;const n=+v;if(!(n>=0))return toast(T('قيمة غير صحيحة','Invalid value'));mt().odo[vid]={km:n,date:day(Date.now()),src:'manual'};save().then(()=>render())}
+function mtPlans(){const ps=mt().plans;return `<div class="r" style="margin-bottom:10px"><button class="p" onclick="planForm()">+ ${T('خطة صيانة','New plan')}</button></div><div class="w"><table><tr><th>${T('المركبة / السائق','Vehicle / Driver')}</th><th>${T('النوع','Type')}</th><th>${T('الفاصل','Interval')}</th><th>${T('آخر صيانة','Last service')}</th><th>${T('القادمة','Next due')}</th><th>${T('المتبقي','Remaining')}</th><th>${T('الحالة','Status')}</th><th></th></tr>
+ ${ps.map(p=>{const c=pc(p);return `<tr><td>${esc(vN(p.vehicleId))}<br><span class="mut">${esc(dN(p.vehicleId))}</span></td><td>${L2(MK,p.kind)}${p.kind==='tire'?'<br><span class="mut">'+esc((p.brand||'')+' '+L2(TP,p.pos||'all'))+'</span>':p.oilType?'<br><span class="mut">'+esc(p.oilType)+'</span>':''}</td><td>${p.intKm?p.intKm+' '+T('كم','km'):''} ${p.intMonths?p.intMonths+' '+T('شهر','mo'):''} ${p.intDays?p.intDays+' '+T('يوم','d'):''}</td><td>${p.lastDate||'—'}<br><span class="mut">${p.lastKm||''} ${T('كم','km')}</span></td><td>${c.nd||'—'}<br><span class="mut">${c.nk!=null?c.nk+' '+T('كم','km'):''}</span></td><td>${rem(c)}</td><td>${chip(c.st)}</td><td><button class="p" onclick="doneForm('${p.id}')">${T('تم التنفيذ','Mark completed')}</button><button onclick="planForm('${p.id}')">${T('تعديل','Edit')}</button><button class="d" onclick="planDel('${p.id}')">${T('حذف','Delete')}</button></td></tr>`}).join('')}</table></div>${ps.length?'':`<p class="mut">${T('لا توجد خطط بعد.','No plans yet.')}</p>`}`}
+function mtModal(h,fn){const m=document.createElement('div');m.className='m';m.innerHTML=`<form><h3>${h[0]}</h3>${h[1]}<div class="r" style="margin-top:10px"><button class="p">${T('حفظ','Save')}</button><button type="button" onclick="this.closest('.m').remove()">${T('إلغاء','Cancel')}</button></div></form>`;m.addEventListener('mousedown',e=>{if(e.target===m)m.remove()});document.addEventListener('keydown',function k(e){if(!m.isConnected)return document.removeEventListener('keydown',k);if(e.key==='Escape')m.remove()});m.querySelector('form').onsubmit=e=>{e.preventDefault();if(fn(Object.fromEntries(new FormData(e.target)))!==false)m.remove()};document.body.appendChild(m);return m}
+const fI=(n,l,v='',t='text',x='')=>`<label>${l}</label><input name="${n}" type="${t}" value="${esc(v)}" ${x}>`;
+const fS=(n,l,o,v)=>`<label>${l}</label><select name="${n}">${o.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
+function planForm(id){const p=mt().plans.find(x=>x.id===id)||{kind:'oil',pos:'all',lastDate:day(Date.now())};
+ const m=mtModal([T('خطة صيانة','Maintenance plan'),fS('vehicleId',T('المركبة (السائق يُحدَّد منها)','Vehicle (driver derived from it)'),db.vehicles.map(v=>[v.id,(v.name||v.plate)+' — '+dN(v.id)]),p.vehicleId)+fS('kind',T('النوع','Type'),Object.keys(MK).map(k=>[k,L2(MK,k)]),p.kind)+
+ fI('oilType',T('نوع الزيت (للزيت)','Oil type (oil)'),p.oilType)+fI('brand',T('ماركة/موديل الإطار (للإطارات)','Tire brand/model (tires)'),p.brand)+fS('pos',T('موضع الإطار','Tire position'),Object.keys(TP).map(k=>[k,L2(TP,k)]),p.pos||'all')+
+ fI('intKm',T('الفاصل بالكيلومتر (اختياري)','Interval km (optional)'),p.intKm,'number','min="0"')+fI('intMonths',T('الفاصل بالأشهر (اختياري)','Interval months (optional)'),p.intMonths,'number','min="0"')+fI('intDays',T('الفاصل بالأيام (اختياري)','Interval days (optional)'),p.intDays,'number','min="0"')+
+ fI('lastDate',T('تاريخ آخر صيانة','Last service date'),p.lastDate,'date','required')+fI('lastKm',T('قراءة العداد عند آخر صيانة','Odometer at last service'),p.lastKm,'number','min="0" required')+fI('provider',T('الورشة / مزوّد الخدمة','Workshop / provider'),p.provider)+fI('notes',T('ملاحظات','Notes'),p.notes)],
+ f=>{if(!f.intKm&&!f.intMonths&&!f.intDays)return toast(T('حدد فاصلًا بالكيلومتر أو بالزمن','Set a km or time interval'))||false;const o=mt().plans.find(x=>x.id===id);const n={...(o||{id:uid()}),...f};if(!o)mt().plans.push(n);else Object.assign(o,n);n.nkey='';save().then(()=>render())})}
+function doneForm(id){const p=mt().plans.find(x=>x.id===id),o=odoCur(p.vehicleId);
+ mtModal([T('تسجيل تنفيذ الصيانة: ','Record completed service: ')+pDesc(p),fS('action',T('الإجراء','Action'),p.kind==='oil'?[['change',L2(MA,'change')]]:['replace','inspect','rotate','repair','pressure'].map(k=>[k,L2(MA,k)]),p.kind==='oil'?'change':'replace')+fI('date',T('تاريخ التنفيذ','Completion date'),day(Date.now()),'date','required')+fI('km',T('قراءة العداد','Odometer'),o?o.km:'','number','min="0" required')+fI('cost',T('التكلفة','Cost'),'','number','min="0" step="0.01"')+fI('provider',T('الورشة','Workshop'),p.provider)+fI('notes',T('ملاحظات','Notes'),'')],
+ f=>{mt().recs.unshift({id:uid(),planId:id,vehicleId:p.vehicleId,kind:p.kind,pos:p.pos,brand:p.brand,oilType:p.oilType,...f,km:+f.km,cost:f.cost===''?null:+f.cost,odoSrc:'manual',by:me.name});if(f.action!=='pressure'){p.lastDate=f.date;p.lastKm=+f.km}p.nkey='';
+ const c=mt().odo[p.vehicleId];if(!c||+f.km>+c.km)mt().odo[p.vehicleId]={km:+f.km,date:f.date,src:'manual'};save().then(()=>{render();toast(T('تم تسجيل الصيانة وحساب الموعد القادم','Service recorded, next due recalculated'))})})}
+function planDel(id){if(!confirm(T('حذف الخطة؟ سجل الصيانة السابق يبقى.','Delete plan? Past history is kept.')))return;mt().plans=mt().plans.filter(p=>p.id!==id);save().then(()=>render())}
+function mtRecs(){const F=mtF;return mt().recs.filter(r=>(!F.v||r.vehicleId===F.v)&&(!F.d||(vById(r.vehicleId)||{}).driverId===F.d)&&(!F.k||r.kind===F.k)&&(!F.f||r.date>=F.f)&&(!F.t||r.date<=F.t))}
+function mtHist(){const rs=mtRecs(),tot=rs.reduce((a,r)=>a+(+r.cost||0),0),byV={};rs.forEach(r=>byV[r.vehicleId]=(byV[r.vehicleId]||0)+(+r.cost||0));
+ const sel=(k,l,o)=>`<div><label>${l}</label><select onchange="mtF.${k}=this.value;render()"><option value="">—</option>${o.map(x=>`<option value="${x[0]}" ${mtF[k]===x[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select></div>`;
+ return `<div class="n"><div class="thc">${sel('v',T('المركبة','Vehicle'),db.vehicles.map(v=>[v.id,v.name||v.plate]))}${sel('d',T('السائق','Driver'),db.drivers.map(d=>[d.id,d.name]))}${sel('k',T('النوع','Type'),Object.keys(MK).map(k=>[k,L2(MK,k)]))}<div><label>${T('من','From')}</label><input type="date" value="${mtF.f}" onchange="mtF.f=this.value;render()"></div><div><label>${T('إلى','To')}</label><input type="date" value="${mtF.t}" onchange="mtF.t=this.value;render()"></div></div>
+ <div class="r" style="margin-top:8px"><button onclick="mtCsv('hist')">${T('تصدير السجل CSV','Export history CSV')}</button><button onclick="mtCsv('due')">${T('تصدير المواعيد القادمة CSV','Export upcoming CSV')}</button></div></div>
+ <div class="w"><table><tr><th>${T('التاريخ','Date')}</th><th>${T('المركبة','Vehicle')}</th><th>${T('السائق','Driver')}</th><th>${T('النوع','Type')}</th><th>${T('العداد','Odometer')}</th><th>${T('التكلفة','Cost')}</th><th>${T('الورشة / ملاحظات','Workshop / notes')}</th></tr>
+ ${rs.map(r=>`<tr><td>${r.date}</td><td>${esc(vN(r.vehicleId))}</td><td>${esc(dN(r.vehicleId))}</td><td>${L2(MK,r.kind)} — ${L2(MA,r.action)}${r.kind==='tire'?' ('+L2(TP,r.pos||'all')+')':''}</td><td>${r.km??''}</td><td>${r.cost??''}</td><td>${esc((r.provider||'')+' '+(r.notes||''))}</td></tr>`).join('')}</table></div>
+ <div class="n"><b>${T('إجمالي التكلفة','Total cost')}: ${tot.toLocaleString(LOCALE)}</b>${Object.keys(byV).map(k=>`<div class="mut">${esc(vN(k))}: ${byV[k].toLocaleString(LOCALE)}</div>`).join('')}</div>`}
+function mtCsv(w){const q=x=>'"'+String(x??'').replace(/"/g,'""')+'"';let h,rows;
+ if(w==='hist'){h=['Date','Vehicle','Driver','Type','Action','Position','Odometer','Cost','Workshop','Notes'];rows=mtRecs().map(r=>[r.date,vN(r.vehicleId),dN(r.vehicleId),r.kind,r.action,r.pos||'',r.km,r.cost,r.provider,r.notes])}
+ else{h=['Vehicle','Driver','Type','Next date','Next odometer','Remaining','Status'];rows=mt().plans.map(p=>{const c=pc(p);return [vN(p.vehicleId),dN(p.vehicleId),p.kind,c.nd,c.nk,rem(c),c.st]})}
+ dl('\ufeff'+[h,...rows].map(r=>r.map(q).join(',')).join('\n'),`maintenance-${w}-${day(Date.now())}.csv`,'text/csv;charset=utf-8')}
+function mtAlertsTab(){const m=mt(),c=m.cfg;return `<div class="n"><b>${T('حدود التذكير (قابلة للتعديل)','Reminder thresholds (configurable)')}</b><label>${T('كم قبل الاستحقاق (مفصولة بفواصل)','km before due (comma-separated)')}</label><input value="${c.km.join(',')}" onchange="mtCfg('km',this.value)"><label>${T('أيام قبل الاستحقاق','Days before due')}</label><input value="${c.days.join(',')}" onchange="mtCfg('days',this.value)">
+ <p class="mut">${T('لا يُكرَّر الإشعار إلا إذا تغيّرت الحالة (قريبًا ← مستحقة ← متأخرة) أو تجاوزت حدًا جديدًا.','A notification repeats only when the status changes or a new threshold is crossed.')}</p><p class="mut">⚠️ ${T('الإشعارات تُولَّد عند فتح التطبيق من حساب مدير. التذكير في الخلفية بدون أي مستخدم يحتاج مهمة مجدولة على الخادم (Cloud Function/Cron) وغير مُفعّل بعد.','Notifications are generated when a manager opens the app. Background reminders with no user online need a server-side scheduled job (Cloud Function/cron), which is not enabled yet.')}</p></div>
+ <div class="r"><button onclick="mt().notif.forEach(n=>n.read=1);save().then(render)">${T('تعليم الكل كمقروء','Mark all read')}</button></div>
+ ${m.notif.map(n=>`<div class="n" style="border-inline-start:4px solid ${n.st==='soon'?'var(--wa)':'var(--er)'};${n.read?'opacity:.6':''}">${n.read?'':'● '}${esc(n.msg)}<br><span class="mut">${new Date(n.t).toLocaleString(LOCALE)}</span> ${n.read?'':`<button onclick="mt().notif.find(x=>x.id==='${n.id}').read=1;save().then(render)">${T('مقروء','Read')}</button>`}</div>`).join('')||`<p class="mut">${T('لا توجد إشعارات','No notifications')}</p>`}`}
+function mtCfg(k,v){const a=v.split(',').map(x=>+x.trim()).filter(x=>x>0).sort((a,b)=>b-a);if(!a.length)return toast(T('قيمة غير صحيحة','Invalid value'));mt().cfg[k]=a;save().then(render)}
+
+TR['الإدارة']='Administration';TR['أجهزة GPS']='GPS Devices';
+const NAVTOP=['dash','map','companies','maint','alerts','rep','track'],NAVADM=['vehicles','drivers','devices','users'],LBL={devices:'أجهزة GPS'};
+function navHTML(){const ok=Object.keys(P).filter(allowed),na=alerts().length,adm=NAVADM.filter(k=>ok.includes(k));
+ const btn=k=>`<button class="${k===page?'on':''}" onclick="go('${k}')"><span class="ic">${IC[k]}</span><span class="tx">${P[k][0]}</span>${k==='alerts'&&na?`<em class="bd">${na}</em>`:''}</button>`;
+ return NAVTOP.filter(k=>ok.includes(k)).map(btn).join('')+(adm.length?`<button class="${adm.includes(page)?'on':''}" onclick="ddToggle(event,'${adm.join(',')}')"><span class="ic">🗂️</span><span class="tx">الإدارة</span><span>▾</span></button>`:'')}
+function ddToggle(ev,keys){ev.stopPropagation();const o=document.getElementById('dd');if(o){const same=o.dataset.k===keys;o.remove();if(same)return}
+ const r=ev.currentTarget.getBoundingClientRect(),d=document.createElement('div');d.id='dd';d.dataset.k=keys;
+ d.innerHTML=keys.split(',').map(k=>`<button onclick="ddGo('${k}')"><span class="ic">${IC[k]}</span><span>${LBL[k]||P[k][0]}</span></button>`).join('');
+ document.body.appendChild(d);d.style.top=(r.bottom+6)+'px';d.style.left=Math.max(8,Math.min(r.left,innerWidth-d.offsetWidth-8))+'px'}
+function ddGo(k){document.getElementById('dd')?.remove();go(k)}
+document.addEventListener('click',()=>document.getElementById('dd')?.remove());
+
+setDocLang();applyTheme();
+(()=>{const d=document.createElement('div');d.id='lgsw';document.body.appendChild(d);
+new MutationObserver(ms=>{if(LANG!=='en')return;ms.forEach(m=>{m.addedNodes.forEach(trNode);if(m.type==='characterData')trNode(m.target)})}).observe(document.body,{childList:true,subtree:true,characterData:true})})();
+initFB();
+render();
+</script>
+</body>
+</html>
